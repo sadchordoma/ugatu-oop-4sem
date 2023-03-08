@@ -21,19 +21,20 @@ public:
 
     int get_y() const;
 
+    // realization in Point.cpp
     void set_x(int _x);
 
-    // method realisation immediately in the definition
+    // method realization immediately in the definition
     void set_y(int _y) {
         this->y = _y;
     }
 
-    void print() {
-        std::cout << "x = " << x << " y = " << y << "\n";
-    }
+    void print() { std::cout << "x = " << x << " y = " << y << "\n"; }
 
 protected:
     // attributes
+    // {0} - x = 0 immediately
+    // when creating object before call constructor
     int x{0};
     int y{0};
 };

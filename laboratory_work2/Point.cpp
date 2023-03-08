@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Point.h"
 
 
@@ -24,21 +23,16 @@ Point::~Point() {
     y = 0;
 }
 
-// methods realisation after define
+// methods realization after define
 
-int Point::get_x() const{
+int Point::get_x() const {
     return x;
 }
 
-int Point::get_y() const{
+int Point::get_y() const {
     return y;
 }
 
 void Point::set_x(int _x) {
     this->x = _x;
 }
-
-
-
-
-
