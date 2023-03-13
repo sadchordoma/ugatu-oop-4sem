@@ -11,7 +11,7 @@ Point::Point(int _x, int _y) {
     set_y(_y);
 }
 
-Point::Point(Point &other) {
+Point::Point(const Point &other) {
     std::cout << "(Point &other)\n";
     set_x(other.get_x());
     set_y(other.get_y());

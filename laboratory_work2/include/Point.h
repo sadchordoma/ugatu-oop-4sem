@@ -12,7 +12,8 @@ public:
     explicit Point(int _x, int _y = 0);
 
     // constructor with parameter-object the same class
-    Point(Point &other);
+    Point(const Point &other);
+
 
     // destructor
     ~Point();

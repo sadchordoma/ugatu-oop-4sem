@@ -19,6 +19,7 @@ Quad::Quad(int _x1, int _y1, int _x2, int _y2,
 
     // it can be escaped by creating new object other
     // s1 = new Section(*s1) | s2 = new Section(*s2)
+    // *s1 || *s2 - передаю объект, ибо s1, s2 - pointers
 Quad::Quad(const Quad &other) : s1(other.s1), s2(other.s2) {
         std::cout << "Quad(const Quad &other)\n";
     }
