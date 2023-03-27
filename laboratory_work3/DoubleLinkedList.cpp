@@ -14,11 +14,6 @@ struct Node {
         is_empty = false;
         data = _data;
     }
-    // added - need to test
-    Node(T *_data) {
-        is_empty = false;
-        data = *_data;
-    }
     ~Node() {}
 };
 
@@ -27,7 +22,9 @@ template<typename T>
 class DoubleLinkedList {
 
 public:
-    DoubleLinkedList() {};
+    DoubleLinkedList() {
+        std::cout << "DoubleLinkedList()\n";
+    };
 
     ~DoubleLinkedList() {
         while (head) {
@@ -49,19 +46,6 @@ public:
         size++;
     }
 
-    // added - need to test
-    void push_back(T *object) {
-        if (size == 0) {
-            initialize_first_node(object);
-        } else {
-            Node<T> *tmp = tail;
-            tail->next = new Node<T>(object);
-            tail = tail->next;
-            tail->prev = tmp;
-        }
-        size++;
-    }
-
     void push_front(T object) {
         if (size == 0) {
             initialize_first_node(object);
@@ -72,7 +56,6 @@ public:
             head->next = tmp;
         }
         size++;
-//        std::cout << "push_front " << object << "\n";
     }
 
     int insert(int index, T object) {
@@ -101,6 +84,12 @@ public:
         return 0;
     }
 
+    // change - instead of giving object - give index
+
+    //????? -----------
+
+    // now returns data of object instead of object
+
     Node<T> *get_by(T object) {
         Node<T> *current = head;
         while (current != nullptr && current->data != object) {
@@ -109,8 +98,9 @@ public:
         if (current == nullptr) {
             return nullptr;
         }
+        // bilo current; changed to current->data
         if (current->data == object) {
-            return current;
+            return current->data;
         }
         return nullptr;
     }
@@ -126,7 +116,8 @@ public:
         if (current == nullptr || current->next == nullptr) {
             return nullptr;
         }
-        return current->next;
+        // bilo current->next; changed to current->next->data
+        return current->next->data;
     }
 
     int remove(T object) {
@@ -166,32 +157,55 @@ public:
         return -1;
     }
 
-    void print() {
-        Node<T> *tmp = head;
-        while (tmp && !tmp->is_empty) {
-            std::cout << tmp->data << " ";
-            tmp = tmp->next;
-        }
-        std::cout << "\n";
-    }
-
     std::size_t get_size() {
         return size;
     }
 
+    void next_elem_object() {
+        if (current == nullptr) {
+            return;
+        }
+        if (current->next != nullptr) {
+            current = current->next;
+//            return current->data;
+            return;
+        }
+        return;
+    }
+
+    void first() {
+        if (size == 0) {
+            return;
+        }
+        current = head;
+        return;
+    }
+
+    bool eol() {        // end of list
+        if (size == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    void get_object() {
+        if (current != nullptr) {
+            return;
+        }
+        return;
+    }
+// пофиксить с virtual and override functions Point..... and so on ...
+// rewatch it and refactor things
 private:
 
     std::size_t size{0};
     Node<T> *head{nullptr};
     Node<T> *tail{nullptr};
+    Node<T> *current{nullptr};
 
     void initialize_first_node(T object) {
         head = new Node<T>(object);
         tail = head;
-    }
-    // added - need to test
-    void initialize_first_node(T *object) {
-        head = new Node<T>(object);
-        tail = head;
+        current = head;
     }
 };
