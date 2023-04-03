@@ -1,155 +1,124 @@
-from tkinter import Tk, Canvas, Checkbutton, BooleanVar
+from tkinter import Tk, Frame, Checkbutton, Canvas
+from tkinter import LEFT, BooleanVar
 
-from CCircle import CCircle, R
-
-
-window = Tk()
-window.title("laboratory_work4")
-# width, height
-window.geometry("700x700")
-window.minsize(400, 250)
-window.maxsize(1920, 1080)
-
-def state_checkbox_ctrl():
-    checkbox_is_enabled_ctrl["text"] = "Ctrl is pressed"
-    if var_checkbox_ctrl.get():
-        checkbox_is_enabled_ctrl.select()
-        return True
-    checkbox_is_enabled_ctrl.deselect()
-    return False
-
-def state_checkbox_intersection():
-    checkbox_is_select_all_when_intersection["text"] = "Select all when there are\n" \
-                                                       "crossed elements"
-    if var_checkbox_intersection.get():
-        checkbox_is_select_all_when_intersection.select()
-        return True
-    checkbox_is_select_all_when_intersection.deselect()
-    return False
+from circle import Circle, R
 
 
-var_checkbox_ctrl = BooleanVar()
-var_checkbox_ctrl.set(False)
-# whether is enabled ctrl or not
-checkbox_is_enabled_ctrl = Checkbutton(
-    text="Is pressed Ctrl", variable=var_checkbox_ctrl,
-    onvalue=1, offvalue=0, command=state_checkbox_ctrl
-)
+class MainWindow:
+    def __init__(self):
+        self.all_circles = {}
 
-var_checkbox_intersection = BooleanVar()
-var_checkbox_intersection.set(False)
-# whether
-checkbox_is_select_all_when_intersection = Checkbutton(
-    text="Behavior when selecting""\n""intersected objects",
-    variable=var_checkbox_intersection,
-    onvalue=1, offvalue=0, command=""
-)
-checkbox_is_enabled_ctrl.grid(column=0, row=0, ipadx=10, ipady=10)
-checkbox_is_select_all_when_intersection.grid(row=0, column=1, ipadx=10, ipady=10)
+        self.window = Tk()
+        self.window.title("laboratory work 4")
+        self.window.geometry("800x800")
+        self.window.minsize(400, 400)
+        self.window.maxsize(1920, 1080)
 
-# canvas - холст = rectangulaer area intended
-# for drawing or other complex layouts
-canvas = Canvas(window, width=1920, height=1080)
-canvas.grid(row=1, column=0, rowspan=2, columnspan=2)
+        self.frame = Frame(self.window, width=1920, height=50, background="white")
+        self.frame.pack(side=LEFT)
 
+        self.checkbox_ctrl_var = BooleanVar()
+        self.checkbox_ctrl = Checkbutton(self.frame, text="Ctrl", variable=self.checkbox_ctrl_var, onvalue=1,
+                                         offvalue=0, padx=5, pady=5, background="orange")
+        self.checkbox_ctrl.pack()
 
-def print_cords(event):
-    print(event.x, event.y)
+        self.checkbox_intersec_var = BooleanVar()
+        self.checkbox_intersec = Checkbutton(self.frame, text="What if Intersection",
+                                             variable=self.checkbox_intersec_var, onvalue=1, offvalue=0, padx=5, pady=5,
+                                             background="orange", )
 
+        self.checkbox_intersec.pack()
 
-all_circles = []
-last_added_element_ind = 0
+        self.canvas = Canvas(self.window, width=1920, height=1080, background="grey")
+        self.canvas.pack(side=LEFT)
 
+        self.canvas.bind("<Button-1>", self.click_button1)
+        self.canvas.bind("<Control-Button-1>", self.click_ctrl_button1)
+        # why does it need to bind Delete to window ?- not canvas
+        self.window.bind("<Delete>", self.delete_selected_circles)
 
-def validation(event, canvas):
-    found_closest = canvas.find_closest(event.x, event.y)
-    if not found_closest:
-        return False
-    else:
-        cords = canvas.coords(found_closest[0])
-        x, y = cords[:2]  # get first 2 cords from (x1, y1, x2, y2)
+    def select_circles_area(self, event):
+        circles_in_area = self.canvas.find_overlapping(event.x - R, event.y - R, event.x + R, event.y + R)
+        print(circles_in_area)
+        for circle in circles_in_area:
+            is_element_here, id_elem = self.validation(event, circle)
+            if is_element_here:
+                existed_circle = self.all_circles[id_elem]
+                existed_circle.select(self.canvas)
+
+    def click_ctrl_button1(self, event):
+        if self.get_state_checkbox_ctrl(event) and self.get_state_checkbox_intersec(event):
+            self.click_button1(event, to_diselect=False)
+        elif self.get_state_checkbox_intersec(event):
+            self.click_button1(event)
+        elif self.get_state_checkbox_ctrl(event):
+            self.click_button1(event, to_diselect=False)
+        else:
+            self.click_button1(event)
+
+    def click_button1(self, event, to_diselect=True):
+        if to_diselect:
+            self.diselect_all()
+        closest_elem = self.canvas.find_closest(event.x, event.y)
+        if closest_elem:
+            closest_elem = closest_elem[0]
+            is_element_here, id_elem = self.validation(event, closest_elem)
+            if is_element_here:
+                if self.get_state_checkbox_intersec(event):
+                    self.select_circles_area(event)
+                else:
+                    existed_circle = self.all_circles[id_elem]
+                    existed_circle.select(self.canvas)
+            else:
+                # there is no element
+                self.add_circle(event)
+        else:
+            self.add_circle(event)
+
+    def add_circle(self, event):
+        self.diselect_all()
+        new_circle = Circle(event.x, event.y)
+        new_circle.draw(self.canvas)
+        new_circle.select(self.canvas)
+
+        self.all_circles[new_circle.get_id()] = new_circle
+
+    def validation(self, event, closest_elem):
+        x, y = self.canvas.coords(closest_elem)[:2]
         x += R
         y += R
-        if abs(event.x - x) < R and abs(event.y - y) < R:
-            print("skipped")
-            return found_closest
-        # else
-        return False
+        if (event.x - x) ** 2 + (event.y - y) ** 2 <= R ** 2:
+            print("select")
+            return 1, closest_elem
+        print("draw")
+        return 0, -1
+
+    def diselect_all(self):
+        self.canvas.itemconfigure("selected", tag="not_selected", outline="")
+
+    def delete_selected_circles(self, event):
+        print(event.x, event.y)
+        print("delete")
+        selected_circles = self.canvas.find_withtag("selected")
+        print(selected_circles)
+        for circle in selected_circles:
+            self.all_circles.pop(circle)
+        self.canvas.delete("selected")
+        last_selected = self.canvas.find_closest(event.x, event.y)
+        if last_selected:
+            last_selected = last_selected[0]
+            self.all_circles[last_selected].select(self.canvas)
+
+    def start(self):
+        self.window.mainloop()
+
+    def get_state_checkbox_ctrl(self, event):
+        return self.checkbox_ctrl_var.get()
+
+    def get_state_checkbox_intersec(self, event):
+        return self.checkbox_intersec_var.get()
 
 
-def select(found_closest, canvas):
-    canvas.itemconfig(found_closest, outline="red", tag="selected")
-
-
-def select_or_disselect(found_closest, canvas):
-    if canvas.itemcget(found_closest, "outline") == "red":
-        diselect(found_closest, canvas)
-    else:
-        select(found_closest, canvas)
-
-
-def diselect(found_closest, canvas):
-    canvas.itemconfig(found_closest, outline="", tag="not_selected")
-
-
-def select_or_draw(event, canvas=canvas):
-    found_closest = validation(event, canvas)
-    # Block new drawings while ctrl or interselection
-    if state_checkbox_ctrl():
-        select_while_ctrl(event, canvas)
-        return
-    if state_checkbox_intersection():
-        select_while_ctrl(event, canvas)
-        return
-    if found_closest:
-        # if i wanna have opportunity to draw new circle while was selecting
-        # if state_checkbox_ctrl():
-        #     select_while_ctrl(event, canvas)
-        #     return
-        # if state_checkbox_intersection():
-        #     select_while_ctrl(event, canvas)
-        #     return
-        select_or_disselect(found_closest, canvas)
-    else:
-        canvas.itemconfigure("selected", tag="not_selected", outline="")
-        new_circle = CCircle(event.x, event.y)
-        new_circle.draw(event, canvas)
-        all_circles.append(new_circle)
-
-def select_diselect_while_ctrl(event, canvas=canvas):
-    list_found_closest = canvas.find_enclosed(
-        event.x - 3 * R, event.y - 3 * R, event.x + 3 * R, event.y + 3 * R
-    )
-    for item in list_found_closest:
-        select_or_disselect(item, canvas)
-def select_while_ctrl(event, canvas=canvas):
-    list_found_closest = canvas.find_enclosed(
-        event.x - 3 * R, event.y - 3 * R, event.x + 3 * R, event.y + 3 * R
-    )
-    for item in list_found_closest:
-        select(item, canvas)
-
-def diselect_while_ctrl(event, canvas=canvas):
-    list_found_closest = canvas.find_enclosed(
-        event.x - 3 * R, event.y - 3 * R, event.x + 3 * R, event.y + 3 * R
-    )
-    for item in list_found_closest:
-        diselect(item, canvas)
-
-def prints(event):
-    print(event)
-    print(dir(event))
-def delete_selected_circles(event):
-    canvas.delete("selected")
-
-def get_data(event):
-    print(state_checkbox_intersection())
-    print(state_checkbox_ctrl())
-
-
-window.bind("<Button-1>", select_or_draw)
-window.bind("<Delete>", delete_selected_circles)
-window.bind("<Button-3>", get_data)
-window.bind("<Control-Button-1>", select_while_ctrl)
-window.mainloop()
-# window.bind("<Button-1>", select_circle, add="+")
+if __name__ == "__main__":
+    window = MainWindow()
+    window.start()
