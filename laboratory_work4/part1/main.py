@@ -1,7 +1,7 @@
 from tkinter import Tk, Frame, Checkbutton, Canvas
 from tkinter import LEFT, BooleanVar
 
-from circle import Circle, R
+from circle4 import Circle
 
 
 class MainWindow:
@@ -25,7 +25,7 @@ class MainWindow:
         self.checkbox_intersec_var = BooleanVar()
         self.checkbox_intersec = Checkbutton(self.frame, text="What if Intersection",
                                              variable=self.checkbox_intersec_var, onvalue=1, offvalue=0, padx=5, pady=5,
-                                             background="orange", )
+                                             background="orange")
 
         self.checkbox_intersec.pack()
 
@@ -33,39 +33,20 @@ class MainWindow:
         self.canvas.pack(side=LEFT)
 
         self.canvas.bind("<Button-1>", self.click_button1)
-        self.canvas.bind("<Control-Button-1>", self.click_ctrl_button1)
-        # why does it need to bind Delete to window ?- not canvas
+        self.canvas.bind("<Control-Button-1>", self.ctrl_click_button1)
         self.window.bind("<Delete>", self.delete_selected_circles)
-
-    def select_circles_area(self, event):
-        circles_in_area = self.canvas.find_overlapping(event.x - R, event.y - R, event.x + R, event.y + R)
-        print(circles_in_area)
-        for circle in circles_in_area:
-            is_element_here, id_elem = self.validation(event, circle)
-            if is_element_here:
-                existed_circle = self.all_circles[id_elem]
-                existed_circle.select(self.canvas)
-
-    def click_ctrl_button1(self, event):
-        if self.get_state_checkbox_ctrl(event) and self.get_state_checkbox_intersec(event):
-            self.click_button1(event, to_diselect=False)
-        elif self.get_state_checkbox_intersec(event):
-            self.click_button1(event)
-        elif self.get_state_checkbox_ctrl(event):
-            self.click_button1(event, to_diselect=False)
-        else:
-            self.click_button1(event)
 
     def click_button1(self, event, to_diselect=True):
         if to_diselect:
             self.diselect_all()
-        closest_elem = self.canvas.find_closest(event.x, event.y)
-        if closest_elem:
-            closest_elem = closest_elem[0]
-            is_element_here, id_elem = self.validation(event, closest_elem)
+        circles_in_area = self.canvas.find_overlapping(event.x, event.y, event.x, event.y)
+        if circles_in_area:
+            closest_elem = circles_in_area[0]
+            existed_circle = self.all_circles[closest_elem]
+            is_element_here, id_elem = existed_circle.validation(event)
             if is_element_here:
                 if self.get_state_checkbox_intersec(event):
-                    self.select_circles_area(event)
+                    existed_circle.select_circles_area(event, circles_in_area, self.all_circles, self.canvas)
                 else:
                     existed_circle = self.all_circles[id_elem]
                     existed_circle.select(self.canvas)
@@ -75,6 +56,16 @@ class MainWindow:
         else:
             self.add_circle(event)
 
+    def ctrl_click_button1(self, event):
+        if self.get_state_checkbox_ctrl(event) and self.get_state_checkbox_intersec(event):
+            self.click_button1(event, to_diselect=False)
+        elif self.get_state_checkbox_intersec(event):
+            self.click_button1(event)
+        elif self.get_state_checkbox_ctrl(event):
+            self.click_button1(event, to_diselect=False)
+        else:
+            self.click_button1(event)
+
     def add_circle(self, event):
         self.diselect_all()
         new_circle = Circle(event.x, event.y)
@@ -83,24 +74,14 @@ class MainWindow:
 
         self.all_circles[new_circle.get_id()] = new_circle
 
-    def validation(self, event, closest_elem):
-        x, y = self.canvas.coords(closest_elem)[:2]
-        x += R
-        y += R
-        if (event.x - x) ** 2 + (event.y - y) ** 2 <= R ** 2:
-            print("select")
-            return 1, closest_elem
-        print("draw")
-        return 0, -1
-
     def diselect_all(self):
-        self.canvas.itemconfigure("selected", tag="not_selected", outline="")
+        if self.all_circles:
+            for circle_id, circle in self.all_circles.items():
+                print(circle)
+                circle.deselect(self.canvas)
 
     def delete_selected_circles(self, event):
-        print(event.x, event.y)
-        print("delete")
         selected_circles = self.canvas.find_withtag("selected")
-        print(selected_circles)
         for circle in selected_circles:
             self.all_circles.pop(circle)
         self.canvas.delete("selected")
