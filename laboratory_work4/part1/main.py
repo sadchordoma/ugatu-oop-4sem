@@ -1,7 +1,7 @@
 from tkinter import Tk, Frame, Checkbutton, Canvas
 from tkinter import LEFT, BooleanVar
 
-from circle4 import Circle
+from circle import Circle
 
 
 class MainWindow:
