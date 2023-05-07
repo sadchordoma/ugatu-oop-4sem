@@ -1,0 +1,6 @@
+.idea
+cmake-build-debug
+__pycache__
+venv
+my_array.py
+new.py
