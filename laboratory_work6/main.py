@@ -1,6 +1,8 @@
 from view import View
 from circle import Circle
 
+from tkinter import colorchooser
+
 
 class Window:
     def __enter__(self):
@@ -10,75 +12,105 @@ class Window:
         pass
 
     def __init__(self):
-        self.figures = {}
         self.view = View()
+        self.figures = {}
+
+        self.last_modified_id = -1
+        self.current_color = "#34eb95"
+        self.current_size = 25
+        self.current_figure = self.view.selected_figure
         # Binding keys
         self.view.canvas.bind("<Button-1>", self.mouse_click)
         self.view.canvas.bind("<Control-Button-1>", self.ctrl_mouse_click)
         self.view.window.bind("<Delete>", self.delete_selected_figures)
+        # To change color on button
+        self.view.button_color.bind("<Button-1>", self.set_color)
+
+        # self.view.label_scale_var.trace_add(["write"],
+        #                                     lambda var, index, mode: self.set_size(var, index, mode))
+        self.view.label_scale_var.trace_add(["write"], self.set_changed_size)
+        self.view.label_scale.bind("<Configure>", self.check_collision)
+        # To control movement
+        self.view.window.bind("<KeyPress-Left>", self.key_pressed)
+        self.view.window.bind("<KeyPress-Right>", self.key_pressed)
+        self.view.window.bind("<KeyPress-Up>", self.key_pressed)
+        self.view.window.bind("<KeyPress-Down>", self.key_pressed)
 
     def start(self):
         self.view.window.mainloop()
 
-    # previous mouse_click
-    # def mouse_click(self, event):
-    #     # with knowledge of what kind element select it and call method on_click
-    #     new_circle = Circle(event.x, event.y)
-    #     canvas = event.widget
-    #     elements_around = canvas.find_overlapping(event.x, event.y, event.x, event.y)
-    #     if len(elements_around):
-    #         flag = True
-    #         validated_elements = set()
-    #         for elem_id in elements_around:
-    #             figure = self.all_elements.get(elem_id)
-    #             if not figure.validate(event):  # if might to select
-    #                 flag = False
-    #                 break
-    #         if flag:
-    #             # Проверку добавить на intersection и выбрать элемент - ибо нарисовать новый там нельзя
-    #             del new_circle
-    #             print(len(validated_elements), validated_elements)
-    #     else:
-    #         self.deselect_all()
-    #         new_circle.draw(canvas)
-    #         self.all_elements[new_circle.get_id()] = new_circle
+    def check_collision(self, event):
+        for _id, figure in self.figures.items():
+            if figure.selected:
+                figure.check_collision(event, self.get_window_size())
 
-    # def mouse_click(self, event):
-    #     self.deselect_all(event)
-    #     # with knowledge of what kind of element select it and call method on_click
-    #     new_figure = Circle(event.x, event.y)
-    #     canvas = event.widget
-    #     elements_around = canvas.find_overlapping(event.x, event.y, event.x, event.y)
-    #     for id_figure in elements_around:
-    #         figure = self.figures.get(id_figure)
-    #         # if it can draw
-    #         if not figure.validate_select(event):
-    #             print("yes")
-    #             print(elements_around)
-    #             new_figure.draw(canvas)
-    #             self.figures[new_figure.get_id()] = new_figure
-    #             return
-    #     else:
-    #         if len(elements_around) > 0:
-    #             self.figures.get(elements_around[0]).select(canvas)
-    #         else:
-    #             new_figure.draw(canvas)
-    #             self.figures[new_figure.get_id()] = new_figure
+    def get_window_size(self):
+        # 600x600+52+52
+        window_size = tuple(map(int, self.view.window.winfo_geometry()
+                                .replace("+", "x").split("x")[:2]))
+
+        return {"x": window_size[0], "y": window_size[1]}
+
+    def set_color(self, event):
+        self.current_color = colorchooser.askcolor()[1]
+        self.view.canvas.itemconfigure("selected", fill=self.current_color)
+
+    def key_pressed(self, event):
+        dist = 5
+        dx = 0
+        dy = 0
+        which_key = {37: "left", 38: "up", 39: "right", 40: "down"}
+        if which_key[event.keycode] == "left":
+            dx = -dist
+        elif which_key[event.keycode] == "right":
+            dx = dist
+        elif which_key[event.keycode] == "up":
+            dy = -dist
+        elif which_key[event.keycode] == "down":
+            dy = dist
+
+        for _id in self.view.canvas.find_withtag("selected"):
+            figure = self.figures[_id]
+            figure.move(self.view.canvas, dx, dy)
+
+    def deselect_all(self, event):
+        for figure in self.figures.values():
+            figure.deselect(event.widget)
+
+    # Set color for drawing figures
+    def set_changed_size(self, var=0, index=0, mode=0):
+        # Change current size and size of selected figures
+        self.current_size = self.view.scale_var.get()
+        for _id, figure in self.figures.items():
+            if figure.selected:
+                figure.resize(self.view.canvas, self.current_size)
+        self.view.scale.event_generate("<Configure>")
+
+    def delete_selected_figures(self, event):
+        selected_figures = self.view.canvas.find_withtag("selected")
+        for _id in selected_figures:
+            self.figures.pop(_id)
+        self.view.canvas.delete("selected")
+        last_selected = self.view.canvas.find_closest(event.x, event.y)
+        if last_selected:
+            self.figures[last_selected[0]].select(self.view.canvas)
 
     # without using canvas.find_overlapping
-
-    def mouse_click(self, event, to_diselect=True):
-        if to_diselect:
+    def mouse_click(self, event, to_deselect=True):
+        event.widget.tag_bind("selected", "<FocusOut>", self.check_collision(event))
+        if to_deselect:
             self.deselect_all(event)
-        # TO-DO CHECK HERE FOR INTERSECTION AND CTRL
         # Creating a figure
-        new_figure = Circle(event.x, event.y)
+        new_figure = Circle(event.x, event.y, self.current_size, self.current_color)
+        new_figure.check_collision(event, self.get_window_size())
         # Deselect all other figures
         # If there is no figures at all -> then easily draw a new one
         if len(self.figures) == 0:
-            print("yes, need to draw")
+            # print("yes, need to draw")
             new_figure.draw(event.widget)
             self.figures[new_figure.get_id()] = new_figure
+            # need to know what element was last modified
+            # self.last_modified_id = new_figure.get_id()
             return
         # Otherwise
         appr_id = -1
@@ -101,15 +133,18 @@ class Window:
                 to_draw = True
         # If there is no figure on event.x, event.y
         if to_draw:
-            print("yes, need to draw")
+            # print("yes, need to draw")
             # Draw
             new_figure.draw(event.widget)
+            # detect whether there is a collision
             # Add to dict of all figures with key = id(figure)
             self.figures[new_figure.get_id()] = new_figure
+            # ???????????????
+            self.last_modified_id = new_figure.get_id()
         # Else - there is already a figure on event.x, event.y
         # so just select it
         else:
-            print("no, need to select")
+            # print("no, need to select")
             chkbox_intersec = self.view.checkbox_intersect_var.get()
             # If checkbox Intersection is pressed
             if chkbox_intersec:
@@ -121,10 +156,20 @@ class Window:
                     # If figure match event.x and event.y
                     # then -> select figure
                     if figure_here.validate_select(event):
+                        # Set figure color if it was changed
+                        figure_here.set_color(self.current_color)
                         figure_here.select(event.widget)
-            # If checkbox Intersection is not pressed - just select 1
+                        # Save last_modified_id
+                        self.last_modified_id = _id
+            # Else if checkbox Intersection is not pressed - just select 1
             else:
+                # Set figure color if it was changed
+                self.figures[appr_id].set_color(self.current_color)
                 self.figures[appr_id].select(event.widget)
+                # Save last_modified_id
+                self.last_modified_id = appr_id
+            # If size was changed -> change size of selected figures
+            self.set_changed_size()
 
     def ctrl_mouse_click(self, event):
         # If Checkbox Ctrl is not pressed
@@ -132,20 +177,7 @@ class Window:
             self.mouse_click(event)
         # If Checkbox Ctrl is pressed
         else:
-            self.mouse_click(event, to_diselect=False)
-
-    def deselect_all(self, event):
-        for figure in self.figures.values():
-            figure.deselect(event.widget)
-
-    def delete_selected_figures(self, event):
-        selected_figures = self.view.canvas.find_withtag("selected")
-        for _id in selected_figures:
-            self.figures.pop(_id)
-        self.view.canvas.delete("selected")
-        last_selected = self.view.canvas.find_closest(event.x, event.y)
-        if last_selected:
-            self.figures[last_selected[0]].select(self.view.canvas)
+            self.mouse_click(event, to_deselect=False)
 
 
 if __name__ == "__main__":
