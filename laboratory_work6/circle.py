@@ -12,14 +12,12 @@ class Circle(Figure):
     # validate whether there is an element on event.x && event.y or no
     def validate_select(self, event):
         if (event.x - self._x) ** 2 + (event.y - self._y) ** 2 <= self._r ** 2:
-            # print("may select", event.x, event.y)
             # may select
             return True
-            # print("may draw", event.x, event.y)
             # may draw
         return False
 
-    def resize(self, canvas, r: int):
+    def resize(self, canvas, r: int, window_size=None):
         self._r = r
         canvas.coords(self._id, self._x - self._r, self._y - self._r,
                       self._x + self._r, self._y + self._r)
@@ -41,7 +39,7 @@ class Circle(Figure):
         self._x = x
         self._y = y
         canvas.coords(self._id, self._x - self._r, self._y - self._r,
-                            self._x + self._r, self._y + self._r)
+                      self._x + self._r, self._y + self._r)
 
     def check_collision(self, event, window_size, just_check=False):
         window_x = window_size["x"]

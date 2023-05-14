@@ -25,8 +25,7 @@ class Figure(ABC):
         self.selected = False
         canvas.itemconfigure(self._id, tag="not_selected", outline="")
 
-        # validate whether there is an element on event.x && event.y or no
-
+    # validate whether there is an element on event.x && event.y or no
     @abstractmethod
     def validate_select(self, event):
         pass

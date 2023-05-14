@@ -1,7 +1,7 @@
 from tkinter import Tk, Menu, Frame, Canvas, Checkbutton, Button, \
-    BooleanVar, IntVar, StringVar, BOTTOM, VERTICAL, RIGHT, Y
+    BooleanVar, IntVar, StringVar, BOTTOM
 
-from tkinter.ttk import Scale, Label, Combobox, Scrollbar
+from tkinter.ttk import Scale, Label, Combobox
 
 import settings
 

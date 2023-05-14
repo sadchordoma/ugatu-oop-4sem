@@ -1,7 +1,7 @@
 from view import View
 from circle import Circle
 from quad import Quad
-
+from triangle import Triangle
 from tkinter import colorchooser
 
 
@@ -89,7 +89,7 @@ class Window:
         self.current_size = self.view.scale_var.get()
         for _id, figure in self.figures.items():
             if figure.selected:
-                figure.resize(self.view.canvas, self.current_size)
+                figure.resize(self.view.canvas, self.current_size, self.get_window_size())
         self.view.scale.event_generate("<Configure>")
 
     def create_figure_from_combobox(self, event):
@@ -99,6 +99,8 @@ class Window:
             return Circle(event.x, event.y, self.current_size, self.current_color)
         elif selected_combobox_figure == "Quad":
             return Quad(event.x, event.y, self.current_size, self.current_color)
+        elif selected_combobox_figure == "Triangle":
+            return Triangle(event.x, event.y, self.current_size, self.current_color)
 
     def delete_selected_figures(self, event):
         selected_figures = self.view.canvas.find_withtag("selected")
@@ -111,7 +113,6 @@ class Window:
 
     # without using canvas.find_overlapping
     def mouse_click(self, event, to_deselect=True):
-        event.widget.tag_bind("selected", "<FocusOut>", self.check_collision(event))
         # Deselect all other figures
         if to_deselect:
             self.deselect_all(event)
