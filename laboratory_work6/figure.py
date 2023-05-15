@@ -9,6 +9,8 @@ class Figure(ABC):
         self._id = -1
         self.color = color
         self.selected = False
+        self.magic_size = 87
+        self.magic_add_size = 3
 
     def get_id(self):
         return self._id
@@ -38,10 +40,15 @@ class Figure(ABC):
     def draw(self, canvas):
         pass
 
-    @abstractmethod
-    def move(self, canvas, dx=0, dy=0):
-        pass
+    def move(self, canvas, dx=0, dy=0, mode="move"):
+        self.update_points(dx, dy, mode)
+        canvas.move(self._id, dx, dy)
 
     @abstractmethod
     def check_collision(self, event, window_size):
         pass
+
+    @abstractmethod
+    def update_points(self, x, y, mode="move"):
+        pass
+# Make Figure.move all in one for every other figures

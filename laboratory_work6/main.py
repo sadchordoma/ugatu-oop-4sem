@@ -2,6 +2,7 @@ from view import View
 from circle import Circle
 from quad import Quad
 from triangle import Triangle
+
 from tkinter import colorchooser
 
 
@@ -16,30 +17,26 @@ class Window:
         self.view = View()
         self.figures = {}
 
-        self.last_modified_id = -1
         self.current_color = "#34eb95"
         self.current_size = 25
-        self.current_figure = self.view.selected_figure
         # Binding keys
         self.view.canvas.bind("<Button-1>", self.mouse_click)
         self.view.canvas.bind("<Control-Button-1>", self.ctrl_mouse_click)
         self.view.window.bind("<Delete>", self.delete_selected_figures)
 
-        # bind my own generated events
-        self.view.canvas.bind("<<Refresh>>", self.refresh)
-        self.view.window.bind("<<Refresh>>", self.refresh)
         # To change color on button
         self.view.button_color.bind("<Button-1>", self.set_color)
-
-        # self.view.label_scale_var.trace_add(["write"],
-        #                                     lambda var, index, mode: self.set_size(var, index, mode))
+        # To trace change variable of scale of figures
         self.view.label_scale_var.trace_add(["write"], self.set_changed_size)
-        self.view.label_scale.bind("<Configure>", self.check_collision)
         # To control movement
         self.view.window.bind("<KeyPress-Left>", self.key_pressed)
         self.view.window.bind("<KeyPress-Right>", self.key_pressed)
         self.view.window.bind("<KeyPress-Up>", self.key_pressed)
         self.view.window.bind("<KeyPress-Down>", self.key_pressed)
+
+        # bind my own generated events
+        self.view.canvas.bind("<<Refresh>>", self.refresh)
+        self.view.window.bind("<<Refresh>>", self.refresh)
 
     def start(self):
         self.view.window.mainloop()
@@ -47,7 +44,7 @@ class Window:
     def check_collision(self, event):
         for _id, figure in self.figures.items():
             if figure.selected:
-                figure.check_collision(event, self.get_window_size())
+                figure.check_collision(self.view.canvas, self.get_window_size())
 
     def get_window_size(self):
         # 600x600+52+52
@@ -60,6 +57,7 @@ class Window:
     def set_color(self, event):
         self.current_color = colorchooser.askcolor()[1]
         self.view.canvas.itemconfigure("selected", fill=self.current_color)
+        self.view.current_color.config(background=self.current_color)
 
     def key_pressed(self, event):
         dist = 5
@@ -77,7 +75,7 @@ class Window:
 
         for _id in self.view.canvas.find_withtag("selected"):
             figure = self.figures[_id]
-            figure.move(self.view.canvas, dx, dy)
+            figure.move(self.view.canvas, dx, dy, "move")
         event.widget.event_generate("<<Refresh>>")
 
     def deselect_all(self, event):
@@ -90,7 +88,6 @@ class Window:
         for _id, figure in self.figures.items():
             if figure.selected:
                 figure.resize(self.view.canvas, self.current_size, self.get_window_size())
-        self.view.scale.event_generate("<Configure>")
 
     def create_figure_from_combobox(self, event):
         selected_combobox_figure = self.view.combo_figures.get()
@@ -175,16 +172,12 @@ class Window:
         event.widget.event_generate("<<Refresh>>")
 
     def ctrl_mouse_click(self, event):
-        # If Checkbox Ctrl is not pressed
-        if not self.view.checkbox_ctrl_var.get():
-            self.mouse_click(event)
-        # If Checkbox Ctrl is pressed
-        else:
-            self.mouse_click(event, to_deselect=False)
+        # If Ctrl is Pressed
+        self.mouse_click(event, to_deselect=False)
 
     def refresh(self, event):
         self.set_changed_size()
-        self.check_collision(self.view.canvas)
+        self.check_collision(event)
 
 
 if __name__ == "__main__":

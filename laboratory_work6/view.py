@@ -1,6 +1,5 @@
 from tkinter import Tk, Menu, Frame, Canvas, Checkbutton, Button, \
-    BooleanVar, IntVar, StringVar, BOTTOM
-
+    BooleanVar, IntVar, StringVar, BOTTOM, Scrollbar
 from tkinter.ttk import Scale, Label, Combobox
 
 import settings
@@ -13,7 +12,7 @@ class View:
         self.window.title("laboratory work 6")
         self.window.geometry("600x600")
         self.window.minsize(600, 600)
-        self.window.maxsize(800, 800)
+        self.window.maxsize(1920, 1080)
         self.window.config(bg="#9db3ab")
 
         # Creating layout for widgets
@@ -43,37 +42,57 @@ class View:
         # self.scale.pack()
         # Checkboxes
         # Checkbox Ctrl
-        self.checkbox_ctrl_var = BooleanVar()
-        self.checkbox_ctrl = Checkbutton(self.frame_menu, variable=self.checkbox_ctrl_var,
-                                         offvalue=0, text="Ctrl",
-                                         padx=5, pady=5, background="#9db3ab")
-        self.checkbox_ctrl.grid(row=0, column=1, padx=5, pady=5, sticky="wens")
+
+
+
+
+        # TO DELETE TO DELETE TO DELETE TO DELETE TO DELETE TO DELETE TO DELETE TO DELETE TO DELETE
+        # self.checkbox_ctrl_var = BooleanVar()
+        # self.checkbox_ctrl = Checkbutton(self.frame_menu, variable=self.checkbox_ctrl_var,
+        #                                  offvalue=0, text="Ctrl",
+        #                                  padx=5, pady=5, background="#9db3ab")
+        # self.checkbox_ctrl.grid(row=0, column=1, padx=5, pady=5, sticky="wens")
         # self.checkbox_ctrl.pack()
+
+
+
+
+
+
+
+
+
+
+
         # Checkbox Intersection
         self.checkbox_intersect_var = BooleanVar()
         self.checkbox_intersect = Checkbutton(self.frame_menu, variable=self.checkbox_intersect_var,
                                               onvalue=1, text="Intersection",
                                               padx=5, pady=5, background="#9db3ab")
-        self.checkbox_intersect.grid(row=1, column=1, padx=5, pady=5, sticky="wens")
+        self.checkbox_intersect.grid(row=0, rowspan=2, column=1, padx=5, pady=5, sticky="wens")
         # self.checkbox_intersect.pack()
         # Button to select color
         self.button_color = Button(self.frame_menu, text="Pick a Color", background="#9db3ab",
                                    padx=4, pady=4)
         self.button_color.grid(row=0, column=2, padx=5, pady=5, sticky="wens")
+
+        self.current_color = Button(self.frame_menu, text="Current Color", background="#34eb95", foreground="black",
+                                    padx=4, pady=4)
+        self.current_color.grid(row=1, column=2, padx=5, pady=5, sticky="wens")
         # self.button_color.pack()
         # Creating a menu
-        self.panel_menu = Menu()
-        self.window.config(menu=self.panel_menu)
-        self.panel_menu.add_command(label="1")
-        self.panel_menu.add_command(label="2")
-        self.panel_menu.add_command(label="3")
+        # self.panel_menu = Menu()
+        # self.window.config(menu=self.panel_menu)
+        # self.panel_menu.add_command(label="1")
+        # self.panel_menu.add_command(label="2")
+        # self.panel_menu.add_command(label="3")
 
         # Creating a frame for canvas for drawing
-        self.frame_canvas = Frame(self.window, width=800, height=800, bg="grey")
+        self.frame_canvas = Frame(self.window, width=1920, height=1080, bg="grey")
         self.frame_canvas.grid(row=1, column=0, columnspan=2)
 
-        self.canvas = Canvas(self.frame_canvas, width=800, height=800, bg="#9db3ab")
-        self.canvas.pack(side=BOTTOM)
+        self.canvas = Canvas(self.frame_canvas, width=1920, height=1080, bg="#9db3ab")
+        self.canvas.pack(fill="both")
 
     def change_value_scale(self, event):
         self.label_scale_var.set(f"Value for Size : {self.scale_var.get()}")

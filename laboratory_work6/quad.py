@@ -1,5 +1,3 @@
-import time
-
 from figure import Figure
 
 
@@ -22,7 +20,6 @@ class Quad(Figure):
 
     # validate whether there is an element on event.x && event.y or no
     def validate_select(self, event):
-        print(event.x, event.y, self._x, self._y)
         # if x1 <= e.x <= x4 and y1 <= e.y <= y3:
         if self.points[0] <= event.x <= self.points[4] and self.points[1] <= event.y <= self.points[3]:
             # may select
@@ -35,16 +32,17 @@ class Quad(Figure):
         self._size = size
         self.update_points(diff, diff, "resize")
         canvas.coords(self._id, self.points)
+        self.check_collision(canvas, window_size)
 
     def draw(self, canvas):
         self._id = canvas.create_polygon(self.points)
         self.select(canvas)
 
-    def move(self, canvas, dx=0, dy=0):
-        self.update_points(dx, dy, "move")
-        canvas.coords(self._id, self.points)
+    # def move(self, canvas, dx=0, dy=0, mode="0"):
+    #     self.update_points(dx, dy, "move")
+    #     canvas.move(self._id, dx, dy)
 
-    def update_points(self, x, y, mode="0"):
+    def update_points(self, x, y, mode="move"):
         if mode == "0":
             self._x = x
             self._y = y
@@ -52,6 +50,7 @@ class Quad(Figure):
                            self._x - self._size, self._y + self._size,
                            self._x + self._size, self._y + self._size,
                            self._x + self._size, self._y - self._size]
+
         elif mode == "move":
             self._x += x
             self._y += y
@@ -65,47 +64,46 @@ class Quad(Figure):
             diff = x
             self._x += diff
             self._y += diff
-            for i in range(len(self.points)):
-                if i in (0, 1, 2, 7):
-                    self.points[i] -= diff
-                else:
-                    self.points[i] += diff
+            self.points = [self._x - self._size, self._y - self._size,
+                           self._x - self._size, self._y + self._size,
+                           self._x + self._size, self._y + self._size,
+                           self._x + self._size, self._y - self._size]
 
     def move_to(self, canvas, x, y):
-        self.update_points(x, y)
+        dx, dy = x - self._x, y - self._y
+        self.update_points(x, y, "0")
         canvas.coords(self._id, self.points)
+        # self.move(canvas, x, y, "0")
 
-    def check_collision(self, event, window_size, just_check=False):
+    def check_collision(self, canvas, window_size, just_check=False):
         window_x = window_size["x"]
         window_y = window_size["y"]
+
         if just_check:
             if self._x - self._size < 0:
-                print("collision left")
                 return True
             if self._x + self._size > window_x:
-                print("collision right")
                 return True
             if self._y - self._size < 0:
-                print("collision up")
                 return True
-            if self._y + self._size > window_y - 87:
-                print("collision down")
+            if self._y + self._size > window_y - self.magic_size:
                 return True
+            return False
         else:
-            if self._x - self._size < 0:
+            if self._x - self._size <= 0:
                 print("collision left")
-                # self._x = self._r
-                self.move_to(event, self._size, self._y)
-            if self._x + self._size > window_x:
+                # self._x = self._size
+                self.move_to(canvas, self._size + self.magic_add_size, self._y)
+            if self._x + self._size >= window_x:
                 print("collision right")
                 # self._x = window_x - self._r
-                self.move_to(event, window_x - self._size, self._y)
-            if self._y - self._size < 0:
+                self.move_to(canvas, window_x - self._size - self.magic_add_size, self._y)
+            if self._y - self._size <= 0:
                 print("collision up")
                 # self.y = self._r + 2
-                self.move_to(event, self._x, self._size + 2)
-            if self._y + self._size > window_y - 87:
+                self.move_to(canvas, self._x, self._size + self.magic_add_size)
+            if self._y + self._size >= window_y - self.magic_size:
                 print("collision down")
                 # 87 iz za togo 4to coordinati berutsya otnositelno?
                 # self._y = window_y - 87 - self._r
-                self.move_to(event, self._x, window_y - 87 - self._size)
+                self.move_to(canvas, self._x, window_y - self.magic_size - self._size)
