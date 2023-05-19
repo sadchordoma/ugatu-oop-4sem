@@ -53,9 +53,9 @@ class Circle(Figure):
         s = file.readline()
         print("atr for figure", s)
         tuple_attr = s.split(",")
-        self._x = int(tuple_attr[0])
-        self._y = int(tuple_attr[1])
-        self._size = int(tuple_attr[2])
+        self._x = float(tuple_attr[0])
+        self._y = float(tuple_attr[1])
+        self._size = float(tuple_attr[2])
         self._r = self._size
         self._color = tuple_attr[3].strip()
         self._selected = eval(tuple_attr[4])

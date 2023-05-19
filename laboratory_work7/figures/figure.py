@@ -36,7 +36,7 @@ class Figure(ABC):
 
     def set_color(self, canvas, color: str):
         self._color = color
-        canvas.itemconfigure(self._id, outline=self._color)
+        canvas.itemconfigure(self._id, fill=self._color)
 
     # validate whether there is an element on event.x && event.y or no
     @abstractmethod
@@ -57,8 +57,7 @@ class Figure(ABC):
 
     def select(self, canvas):
         self._selected = True
-        canvas.itemconfigure(self._id, tag="selected", fill=self.color,
-                             outline="#eb3434", width=5)
+        canvas.itemconfigure(self._id, tag="selected", outline="#eb3434", width=5)
 
     def deselect(self, canvas):
         self._selected = False
@@ -131,9 +130,9 @@ class Figure(ABC):
         s = file.readline()
         print("atr for figure", s)
         tuple_attr = s.split(",")
-        self._x = int(tuple_attr[0])
-        self._y = int(tuple_attr[1])
-        self._size = int(tuple_attr[2])
+        self._x = float(tuple_attr[0])
+        self._y = float(tuple_attr[1])
+        self._size = float(tuple_attr[2])
         self._color = tuple_attr[3].strip()
         self._selected = eval(tuple_attr[4])
         self.update_points(self._x, self._y, "to")

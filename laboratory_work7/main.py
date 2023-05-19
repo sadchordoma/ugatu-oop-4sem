@@ -104,7 +104,8 @@ class App(ctk.CTk):
         self.bind("<Delete>", self.delete_selected_figures)
 
         # To change color on button
-        self.color_btn.bind("<Button-1>", self.set_color)
+        self.color_btn.bind("<Button-1>", self.set_color_from_ask)
+        self.curr_color_label.bind("<Button-1>", self.set_color)
         # To trace change variable of scale of figures
         self.label_scale_var.trace_add(["write"], self.set_changed_size)
         # To control movement
@@ -146,12 +147,16 @@ class App(ctk.CTk):
         return window_size[0], window_size[1]
 
     # Set color for drawing figures
-    def set_color(self, event):
+    def set_color_from_ask(self, event):
         self.current_color = colorchooser.askcolor()[1]
         for figure in self.figures.get_selected_figures():
             figure.set_color(self.canvas, self.current_color)
             figure.select(self.canvas)
         self.curr_color_label.config(background=str(self.current_color))
+
+    def set_color(self, event):
+        for figure in self.figures.get_selected_figures():
+            figure.set_color(self.canvas, self.current_color)
 
     def start(self):
         self.mainloop()
@@ -267,13 +272,11 @@ class App(ctk.CTk):
                         # then -> select figure
                         if figure_here.validate_select(event):
                             # Set figure color if it was changed
-                            figure_here.set_color(event.widget, self.current_color)
                             figure_here.select(event.widget)
                 # Else if checkbox Intersection is not pressed - just select 1
                 else:
                     # Set figure color if it was changed
                     that_figure = self.figures.find_by_id(appr_id)
-                    that_figure.set_color(event.widget, self.current_color)
                     that_figure.select(event.widget)
         event.widget.event_generate("<<Refresh>>")
 
@@ -286,42 +289,25 @@ class App(ctk.CTk):
         self.check_collision(event)
 
     # added for 7 lab
-    def group_shapes(self, event=None, selected_figures=None):
-        if selected_figures is None:
-            selected_figures = self.figures.get_selected_figures()
+    def group_shapes(self, event):
+        selected_figures = self.figures.get_selected_figures()
         if len(selected_figures) <= 1:
-            print("Selected only one figure")
             messagebox.showerror("Error", "Selected only one figure\nNeed at least 2")
-
-        if type(selected_figures) != Group:
-            new_group = Group()
-            list_to_delete = []
-            for figure in selected_figures:
-                new_group.add_shape(figure)
-                list_to_delete.append(figure)
-            try:
-                for item in list_to_delete:
-                    self.figures.remove(item)
-                new_group.select(self.canvas)
-            except ValueError:
-                print("passed cos loaded from file no need to remove")
-            self.figures.append(new_group)
-        else:
-            all_figures = []
-            for figure in selected_figures:
-                self.group_shapes(selected_figures=figure.shapes)
-                all_figures.append(figure)
-            self.group_shapes(selected_figures=all_figures)
+        new_group = Group()
+        list_to_delete = []
+        for figure in selected_figures:
+            new_group.add_shape(figure)
+            list_to_delete.append(figure)
+        self.figures.append(new_group)
+        for item in list_to_delete:
+            self.figures.remove(item)
+            new_group.select(self.canvas)
 
     def context_menu_popup(self, event):
         self.menu_popup.post(event.x_root, event.y_root)
 
     def save_current_state_figures(self):
-        print(len(self.figures), self.figures)
-        for figure in self.figures:
-            print(str(figure.save()))
-
-        file_path = filedialog.askopenfilename(title="Save File", initialfile="save.txt", defaultextension="txt")
+        file_path = filedialog.askopenfilename(title="Save File", initialfile="save.txt", defaultextension=".txt")
         try:
             with open(file_path, "w") as f:
                 f.write("SOME WORDS TO CHECK IF FILE WASNT CORRUPTED\n")
@@ -331,41 +317,16 @@ class App(ctk.CTk):
         except FileNotFoundError:
             pass
 
-    def load_state_from_file(self, figure_factory=None):
-        if figure_factory is None:
-            figure_factory = self.factory
-        # open file
-        # create fabric
-        # create shape array
-        # call load shapes
-        file_path = filedialog.askopenfilename(defaultextension=".txt")
-        f = open(file_path, "r")
-        first_line = f.readline()
-        f.readline()
-        self.delete_all()
-        if first_line != "SOME WORDS TO CHECK IF FILE WASNT CORRUPTED\n":
-            messagebox.showerror("Error", "Corrupted File")
-            raise Exception("Corrupted File")
-        while True:
-            s = f.readline().strip()
-            print("f.readline()", s)
-            if not s:
-                f.close()
-                break
-            if s == "Group":
-                figure = figure_factory.create_figure("Group")
-                print("Group", figure)
-                len_group = int(f.readline())
-                print("len_group", len_group)
-                figure.load(f, figure_factory, _len=len_group)
-            else:
-                figure = figure_factory.create_figure(s)
-                print("Figure", figure)
-                figure.load(f)
-            self.figures.append(figure)
-        for figure in self.figures:
-            figure.draw(self.canvas)
-        messagebox.showinfo("Success", f"Loaded from {file_path}")
+    def load_state_from_file(self):
+        try:
+            file_path = filedialog.askopenfilename(initialfile="save.txt", defaultextension=".txt")
+            self.delete_all()
+            self.figures.load_figures(file_path, self.factory)
+            for figure in self.figures:
+                figure.draw(self.canvas)
+            messagebox.showinfo("Success", f"Loaded from {file_path}")
+        except FileNotFoundError:
+            pass
 
 
 if __name__ == '__main__':

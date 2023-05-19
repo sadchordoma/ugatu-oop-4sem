@@ -1,0 +1,78 @@
+SOME WORDS TO CHECK IF FILE WASNT CORRUPTED
+
+Circle
+325, 70, 50, #c0c0c0, True
+Circle
+189, 287, 50, #c0c0c0, True
+Circle
+474, 435, 50, #c0c0c0, True
+Circle
+759, 222, 50, #c0c0c0, False
+Circle
+255, 343, 50, #c0c0c0, True
+Circle
+841, 374, 50, #00ffff, False
+Circle
+1075, 306, 50, #00ffff, False
+Circle
+889, 483, 50, #00ffff, False
+Circle
+993, 573, 50, #00ffff, False
+Circle
+1234, 545, 50, #00ffff, False
+Circle
+450, 158, 50, #00ffff, False
+Quad
+87, 484, 50, #8080ff, False
+Quad
+69, 621, 50, #8080ff, False
+Quad
+517, 631, 50, #00ffff, False
+Quad
+631, 261, 50, #00ffff, False
+Triangle
+120, 55, 50, #00ffff, False
+Triangle
+94, 130, 50, #00ffff, False
+Triangle
+237, 188, 50, #00ffff, True
+Triangle
+343, 237, 50, #00ffff, False
+Group
+2
+Group
+2
+Group
+5
+Circle
+1079, 134, 50, #00ffff, True
+Triangle
+737, 92, 50, #00ffff, True
+Triangle
+880, 103, 50, #00ffff, True
+Triangle
+911, 210, 50, #00ffff, True
+Triangle
+966, 186, 50, #00ffff, True
+Group
+2
+Triangle
+1163, 55, 50, #00ffff, True
+Triangle
+1232, 54, 50, #00ffff, True
+Group
+3
+Triangle
+1233, 339, 50, #00ffff, True
+Triangle
+1085, 432, 50, #00ffff, True
+Triangle
+1207, 465, 50, #00ffff, True
+Group
+3
+Quad
+289, 666, 50, #9ad926, True
+Triangle
+235, 492, 50, #9ad926, True
+Triangle
+286, 506, 50, #9ad926, True
