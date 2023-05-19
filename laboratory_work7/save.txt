@@ -1,78 +1,66 @@
 SOME WORDS TO CHECK IF FILE WASNT CORRUPTED
 
+Group
+9
 Circle
-325, 70, 50, #c0c0c0, True
+624.0, 387.0, 50, #ffffff, False
 Circle
-189, 287, 50, #c0c0c0, True
+913.0, 152.0, 50, #ffffff, False
 Circle
-474, 435, 50, #c0c0c0, True
+891.0, 348.0, 50, #ffffff, False
 Circle
-759, 222, 50, #c0c0c0, False
+752.0, 469.0, 50, #ffffff, False
 Circle
-255, 343, 50, #c0c0c0, True
+851.0, 538.0, 50, #ffffff, False
 Circle
-841, 374, 50, #00ffff, False
+1086.0, 433.0, 50, #ffffff, False
 Circle
-1075, 306, 50, #00ffff, False
+1106.0, 174.0, 50, #ffffff, False
 Circle
-889, 483, 50, #00ffff, False
+649.0, 54.0, 50, #ffffff, False
+Group
+1
 Circle
-993, 573, 50, #00ffff, False
-Circle
-1234, 545, 50, #00ffff, False
-Circle
-450, 158, 50, #00ffff, False
-Quad
-87, 484, 50, #8080ff, False
-Quad
-69, 621, 50, #8080ff, False
-Quad
-517, 631, 50, #00ffff, False
-Quad
-631, 261, 50, #00ffff, False
-Triangle
-120, 55, 50, #00ffff, False
-Triangle
-94, 130, 50, #00ffff, False
-Triangle
-237, 188, 50, #00ffff, True
-Triangle
-343, 237, 50, #00ffff, False
+555.0, 166.0, 50, #ffffff, False
 Group
 2
-Group
-2
-Group
-5
 Circle
-1079, 134, 50, #00ffff, True
-Triangle
-737, 92, 50, #00ffff, True
-Triangle
-880, 103, 50, #00ffff, True
-Triangle
-911, 210, 50, #00ffff, True
-Triangle
-966, 186, 50, #00ffff, True
-Group
-2
-Triangle
-1163, 55, 50, #00ffff, True
-Triangle
-1232, 54, 50, #00ffff, True
-Group
-3
-Triangle
-1233, 339, 50, #00ffff, True
-Triangle
-1085, 432, 50, #00ffff, True
-Triangle
-1207, 465, 50, #00ffff, True
-Group
-3
+136.5, 289.5, 50, #8080ff, False
+Circle
+55.0, 503.5, 50, #8080ff, False
 Quad
-289, 666, 50, #9ad926, True
+275, 122, 50, #8080ff, False
+Quad
+301, 293, 50, #8080ff, False
+Quad
+289, 453, 50, #8080ff, False
+Quad
+406, 565, 50, #34eb95, False
 Triangle
-235, 492, 50, #9ad926, True
+129, 76, 50, #8080ff, True
 Triangle
-286, 506, 50, #9ad926, True
+54, 184, 50, #34eb95, False
+Triangle
+378, 273, 50, #34eb95, False
+Triangle
+445, 443, 50, #34eb95, False
+Triangle
+615, 599, 50, #34eb95, False
+Triangle
+1042, 645, 50, #8080ff, False
+Triangle
+1190, 623, 50, #34eb95, False
+Triangle
+1179, 338, 50, #34eb95, False
+Triangle
+765, 235, 50, #34eb95, False
+Triangle
+586, 256, 50, #34eb95, False
+Triangle
+791, 73, 50, #34eb95, False
+Triangle
+989.0, 130.0, 50, #ffffff, False
+Triangle
+487, 448, 50, #8080ff, False
+Triangle
+411, 248, 50, #8080ff, False

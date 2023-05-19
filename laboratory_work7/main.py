@@ -3,8 +3,8 @@ import customtkinter as ctk
 
 import settings
 
-from my_array import MyFiguresArray
-from my_factory import MyFactory
+from storage.my_array import MyFiguresArray
+from factory.my_factory import MyFactory
 from figures.group import Group
 
 

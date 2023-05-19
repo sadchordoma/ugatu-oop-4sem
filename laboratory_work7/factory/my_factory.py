@@ -1,4 +1,4 @@
-from figure_factory import FigureFactory
+from factory.figure_factory import FigureFactory
 
 from figures.circle import Circle
 from figures.quad import Quad
