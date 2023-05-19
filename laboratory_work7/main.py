@@ -3,6 +3,7 @@ import customtkinter as ctk
 
 import settings
 
+from my_array import MyFiguresArray
 from my_factory import MyFactory
 from figures.group import Group
 
@@ -93,7 +94,7 @@ class App(ctk.CTk):
         self.container_frame.grid(row=0, column=2, rowspan=4, columnspan=4, sticky="nsew")
 
         #
-        self.figures = {}
+        self.figures = MyFiguresArray()
         self.current_color = "#34eb95"
         self.current_size = settings.SIZE
 
@@ -135,9 +136,8 @@ class App(ctk.CTk):
     def set_changed_size(self, var=0, index=0, mode=0):
         # Change current size and size of selected figures
         self.current_size = self.scale_var.get()
-        for _id, figure in self.figures.items():
-            if figure.selected:
-                figure.resize(self.canvas, self.current_size, self.get_window_size())
+        for figure in self.figures.get_selected_figures():
+            figure.resize(self.canvas, self.current_size, self.get_window_size())
 
     def get_window_size(self):
         # 600x600+52+52
@@ -148,19 +148,17 @@ class App(ctk.CTk):
     # Set color for drawing figures
     def set_color(self, event):
         self.current_color = colorchooser.askcolor()[1]
-        for _id in self.get_id_selected_figures():
-            if self.figures[_id].selected:
-                self.figures[_id].set_color(self.canvas, self.current_color)
-                self.figures[_id].select(self.canvas)
+        for figure in self.figures.get_selected_figures():
+            figure.set_color(self.canvas, self.current_color)
+            figure.select(self.canvas)
         self.curr_color_label.config(background=str(self.current_color))
 
     def start(self):
         self.mainloop()
 
     def check_collision(self, event):
-        for _id, figure in self.figures.items():
-            if figure.selected:
-                figure.fix_collision(self.canvas, self.get_window_size())
+        for figure in self.figures.get_selected_figures():
+            figure.fix_collision(self.canvas, self.get_window_size())
 
     def key_pressed(self, event):
         dist = 5
@@ -176,18 +174,17 @@ class App(ctk.CTk):
         elif which_key[event.keycode] == "down":
             dy = dist
 
-        for _id, figure in self.figures.items():
-            if figure.selected:
-                figure.update_points(dx * 1.5, dy * 1.5, "move")
-                if figure.detect_collision(self.canvas, self.get_window_size()):
-                    figure.update_points(-dx * 1.5, -dy * 1.5, "move")
-                else:
-                    figure.move(self.canvas, dx, dy, "move")
+        for figure in self.figures.get_selected_figures():
+            figure.update_points(dx * 1.5, dy * 1.5, "move")
+            if figure.detect_collision(self.canvas, self.get_window_size()):
+                figure.update_points(-dx * 1.5, -dy * 1.5, "move")
+            else:
+                figure.move(self.canvas, dx, dy, "move")
 
         event.widget.event_generate("<<Refresh>>")
 
     def deselect_all(self, event):
-        for figure in self.figures.values():
+        for figure in self.figures:
             figure.deselect(event.widget)
 
     def create_figure_from_combobox(self, event):
@@ -198,35 +195,41 @@ class App(ctk.CTk):
                                           False)
 
     def delete_selected_figures(self, event):
-        selected_figures = self.get_id_selected_figures()
-
-        for _id in selected_figures:
-            self.figures[_id].delete(self.canvas)
-            self.figures.pop(_id)
-        for _id in self.figures:
-            if not self.figures[_id].selected:
-                self.figures[_id].select(self.canvas)
+        list_to_delete = []
+        for figure in self.figures.get_selected_figures():
+            figure.delete(self.canvas)
+            list_to_delete.append(figure)
+        for item in list_to_delete:
+            self.figures.remove(item)
+        for figure in self.figures:
+            if not figure.selected:
+                figure.select(self.canvas)
                 break
+
+    def delete_all(self):
+        for figure in self.figures:
+            figure.delete(self.canvas)
+        self.figures = MyFiguresArray()
 
     # without using canvas.find_overlapping
     def mouse_click(self, event, to_deselect=True):
         # Deselect all other figures
         if to_deselect:
             self.deselect_all(event)
-            # Creating a figure
-        new_figure = self.create_figure_from_combobox(event)
         # If there is no figures at all -> then easily draw a new one
         if len(self.figures) == 0:
+            # Creating a figure
+            new_figure = self.create_figure_from_combobox(event)
             # print("yes, need to draw")
             new_figure.draw(event.widget)
             new_figure.select(event.widget)
-            self.figures[new_figure.id] = new_figure
+            self.figures.append(new_figure)
         else:
             # Otherwise
             appr_id = -1
             to_draw = True
             # Checking all figures in my dict
-            for _id, figure in self.figures.items():
+            for figure in self.figures:
                 # if a cords where I clicked match any figure
                 # then select it and break
                 # otherwise I can find a figure that is not on my cords will say
@@ -234,7 +237,7 @@ class App(ctk.CTk):
                 # but previously there was a figure that said NO
                 # that's why [break]
                 if figure.validate_select(event):
-                    appr_id = _id
+                    appr_id = figure.id
                     to_draw = False
                     break
                 # If I didn't find any figure said current cords match it
@@ -244,10 +247,11 @@ class App(ctk.CTk):
             # If there is no figure on event.x, event.y
             if to_draw:
                 # Draw
+                new_figure = self.create_figure_from_combobox(event)
                 new_figure.draw(event.widget)
                 new_figure.select(event.widget)
                 # Add to dict of all figures with key = id(figure)
-                self.figures[new_figure.id] = new_figure
+                self.figures.append(new_figure)
             # Else - there is already a figure on event.x, event.y
             # so just select it
             else:
@@ -258,7 +262,7 @@ class App(ctk.CTk):
                     ids_intersected_figures = event.widget.find_overlapping(event.x, event.y, event.x, event.y)
                     for _id in ids_intersected_figures:
                         # Get figure from id
-                        figure_here = self.figures[_id]
+                        figure_here = self.figures.find_by_id(_id)
                         # If figure match event.x and event.y
                         # then -> select figure
                         if figure_here.validate_select(event):
@@ -268,8 +272,9 @@ class App(ctk.CTk):
                 # Else if checkbox Intersection is not pressed - just select 1
                 else:
                     # Set figure color if it was changed
-                    self.figures[appr_id].set_color(event.widget, self.current_color)
-                    self.figures[appr_id].select(event.widget)
+                    that_figure = self.figures.find_by_id(appr_id)
+                    that_figure.set_color(event.widget, self.current_color)
+                    that_figure.select(event.widget)
         event.widget.event_generate("<<Refresh>>")
 
     def ctrl_mouse_click(self, event):
@@ -281,100 +286,86 @@ class App(ctk.CTk):
         self.check_collision(event)
 
     # added for 7 lab
-    def group_shapes(self, event, id_selected=None):
-        if id_selected is None:
-            id_selected = self.get_id_selected_figures()
-        new_group = Group()
-        for _id in id_selected:
-            new_group.add_shape(self.figures[_id])
-            self.figures.pop(_id)
-            self.figures[id(new_group)] = new_group
+    def group_shapes(self, event=None, selected_figures=None):
+        if selected_figures is None:
+            selected_figures = self.figures.get_selected_figures()
+        if len(selected_figures) <= 1:
+            print("Selected only one figure")
+            messagebox.showerror("Error", "Selected only one figure\nNeed at least 2")
+
+        if type(selected_figures) != Group:
+            new_group = Group()
+            list_to_delete = []
+            for figure in selected_figures:
+                new_group.add_shape(figure)
+                list_to_delete.append(figure)
+            try:
+                for item in list_to_delete:
+                    self.figures.remove(item)
+                new_group.select(self.canvas)
+            except ValueError:
+                print("passed cos loaded from file no need to remove")
+            self.figures.append(new_group)
+        else:
+            all_figures = []
+            for figure in selected_figures:
+                self.group_shapes(selected_figures=figure.shapes)
+                all_figures.append(figure)
+            self.group_shapes(selected_figures=all_figures)
 
     def context_menu_popup(self, event):
         self.menu_popup.post(event.x_root, event.y_root)
 
-    def get_id_selected_figures(self):
-        id_selected_figures = []
-        for _id, figure in self.figures.items():
-            if figure.selected:
-                id_selected_figures.append(_id)
-        return id_selected_figures
-
     def save_current_state_figures(self):
-        file_path = filedialog.askopenfilename(defaultextension=".txt")
+        print(len(self.figures), self.figures)
+        for figure in self.figures:
+            print(str(figure.save()))
+
+        file_path = filedialog.askopenfilename(title="Save File", initialfile="save.txt", defaultextension="txt")
         try:
             with open(file_path, "w") as f:
-                #     for item in self.canvas.find_all():
-                #         print(json.dumps({
-                #             'type': self.canvas.type(item),
-                #             'coords': self.canvas.coords(item),
-                #             'options': {key: val[-1] for key, val
-                #                         in self.canvas.itemconfig(item).items()}
-                #         }), file=f)
-                f.write("name x y size color selected\n")
-                for figure in self.figures.values():
-                    f.write(str(figure.save("new.txt")) + "\n")
+                f.write("SOME WORDS TO CHECK IF FILE WASNT CORRUPTED\n")
+                for figure in self.figures:
+                    f.write("\n" + str(figure.save()))
             messagebox.showinfo("Notification", f"Saved to {file_path}")
         except FileNotFoundError:
             pass
 
-    def load_elem(self, attr_figures):
-        new_figure = self.factory.create_figure(attr_figures[0])
-        new_figure.load(attr_figures)
-        new_figure.draw(self.canvas)
-        self.figures[new_figure.id] = new_figure
-        return new_figure
-
-    def load_group(self, group, rec=None):
-        ids_group = []
-        for i in range(len(group)):
-            if group[i].get("elem"):
-                new_figure = self.load_elem(group[i]["elem"])
-                ids_group.append(new_figure.id)
-            elif group[i].get("group"):
-                list_group = group[i]["group"]
-                ids = self.load_group(list_group, "rec")
-                for _id in ids:
-                    ids_group.append(_id)
-                self.group_shapes(event=None, id_selected=ids_group)
-
-        if len(ids_group) > 0 and rec is None:
-            self.group_shapes(event=None, id_selected=ids_group)
-        return ids_group
-
-    def load_state_from_file(self):
+    def load_state_from_file(self, figure_factory=None):
+        if figure_factory is None:
+            figure_factory = self.factory
         # open file
         # create fabric
         # create shape array
         # call load shapes
         file_path = filedialog.askopenfilename(defaultextension=".txt")
         f = open(file_path, "r")
-        s = f.readlines()
-        if s[0] != "name x y size color selected\n":
+        first_line = f.readline()
+        f.readline()
+        self.delete_all()
+        if first_line != "SOME WORDS TO CHECK IF FILE WASNT CORRUPTED\n":
             messagebox.showerror("Error", "Corrupted File")
             raise Exception("Corrupted File")
-        for line in s[1:]:
-            dict_figure = eval(line)
-            print(dict_figure)
-            if dict_figure.get("elem"):
-                self.load_elem(dict_figure["elem"])
-            elif dict_figure.get("group"):
-                self.load_group(dict_figure["group"])
-        f.close()
-
-    # def load_shapes(self, file_path: str, figure_factory):
-    #     try:
-    #         f = open(file_path, "r")
-    #         s = f.readlines()
-    #         for line in s:
-    #             shape = eval(line)
-    #             # shape = figure_factory.create_shape(name)
-    #             # shape.load(shape)
-    #             # self.__shapes.append(shape)
-    #             print(type(shape), shape)
-    #         f.close()
-    #     except FileNotFoundError as e:
-    #         raise e
+        while True:
+            s = f.readline().strip()
+            print("f.readline()", s)
+            if not s:
+                f.close()
+                break
+            if s == "Group":
+                figure = figure_factory.create_figure("Group")
+                print("Group", figure)
+                len_group = int(f.readline())
+                print("len_group", len_group)
+                figure.load(f, figure_factory, _len=len_group)
+            else:
+                figure = figure_factory.create_figure(s)
+                print("Figure", figure)
+                figure.load(f)
+            self.figures.append(figure)
+        for figure in self.figures:
+            figure.draw(self.canvas)
+        messagebox.showinfo("Success", f"Loaded from {file_path}")
 
 
 if __name__ == '__main__':

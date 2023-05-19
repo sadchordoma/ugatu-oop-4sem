@@ -11,6 +11,9 @@ class Figure(ABC):
         self._color = color
         self._selected = selected
 
+    def __len__(self):
+        return 1
+
     @abstractmethod
     def __str__(self):
         pass
@@ -54,7 +57,7 @@ class Figure(ABC):
 
     def select(self, canvas):
         self._selected = True
-        canvas.itemconfigure(self._id, tag="selected",fill=self.color,
+        canvas.itemconfigure(self._id, tag="selected", fill=self.color,
                              outline="#eb3434", width=5)
 
     def deselect(self, canvas):
@@ -121,14 +124,16 @@ class Figure(ABC):
     def delete(self, canvas):
         canvas.delete(self._id)
 
-    def save(self, file_path="new.txt"):
-        # return f"['{self}', {self._x}, {self._y}, {self._size}, '{self._color}', {self._selected}]"
-        return {"elem": (str(self), self._x, self._y, self._size, self._color, self._selected)}
+    def save(self):
+        return f"{str(self)}\n{self._x}, {self._y}, {self._size}, {self._color}, {self._selected}"
 
-    def load(self, tuple_attr):
-        self._x = tuple_attr[1]
-        self._y = tuple_attr[2]
-        self._size = tuple_attr[3]
-        self._color = tuple_attr[4]
-        self._selected = tuple_attr[5]
+    def load(self, file, **kwargs):
+        s = file.readline()
+        print("atr for figure", s)
+        tuple_attr = s.split(",")
+        self._x = int(tuple_attr[0])
+        self._y = int(tuple_attr[1])
+        self._size = int(tuple_attr[2])
+        self._color = tuple_attr[3].strip()
+        self._selected = eval(tuple_attr[4])
         self.update_points(self._x, self._y, "to")

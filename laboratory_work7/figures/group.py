@@ -2,16 +2,30 @@ from figures.element import Element
 
 
 class Group(Element):
-    def __init__(self):
+    def __init__(self, selected=False):
         super().__init__()
         self.__shapes = []
+        self._selected = selected
         self._id = id(self)
+
+    @property
+    def shapes(self):
+        return self.__shapes
+
+    def __getitem__(self, index: int):
+        return self.__shapes[index]
 
     def __str__(self):
         return "Group"
 
+    def view(self):
+        return f"{self.__shapes}"
+
     def __len__(self):
         return len(self.__shapes)
+
+    def first(self):
+        return self.__shapes[0]
 
     @property
     def id(self):
@@ -76,18 +90,28 @@ class Group(Element):
         for shape in self.__shapes:
             shape.update_points(dx, dy, mode)
 
-    def load(self, dict_group):
-        pass
+    def load(self, file, figure_factory, **kwargs):
+        for i in range(kwargs.get("_len")):
+            s = file.readline().strip()
+            print(s)
+            if s == "Group":
+                figure = figure_factory.create_figure("Group")
+                len_group = int(file.readline())
+                figure.load(file, figure_factory, _len=len_group)
+            else:
+                figure = figure_factory.create_figure(s)
+                figure.load(file)
+            self.__shapes.append(figure)
 
-    def save(self, file_path="new.txt"):
-        # s = "{'" + str(self) + "':"
-        # for i in range(len(self.__shapes)):
-        #     s += self.__shapes[i].save("new.txt")
-        #     if i != len(self.__shapes) - 1:
-        #         s += ","
-        #
-        # return s + "}"
-        s = []
+    def save(self):
+        shapes = []
         for shape in self.__shapes:
-            s.append(shape.save())
-        return {"group": s}
+            shapes.append(shape.save())
+        s = f"Group\n{len(shapes)}"
+        for shape in shapes:
+            s += "\n" + str(shape)
+        return s
+
+    def find_by_id(self, _id: int):
+        for shape in self.__shapes:
+            shape.find(_id)

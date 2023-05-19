@@ -14,9 +14,9 @@ class Element(ABC):
         pass
 
     @abstractmethod
-    def save(self, path_file):
+    def save(self):
         pass
 
     @abstractmethod
-    def load(self, attr):
+    def load(self, attr, factory):
         pass

@@ -26,7 +26,6 @@ class Circle(Figure):
 
     def draw(self, canvas):
         # need this if was loaded from file
-        self._r = self._size
 
         self._id = canvas.create_oval(self._x - self._r,
                                       self._y - self._r,
@@ -49,3 +48,14 @@ class Circle(Figure):
         self._y = y
         canvas.coords(self._id, self._x - self._r, self._y - self._r,
                       self._x + self._r, self._y + self._r)
+
+    def load(self, file, **kwargs):
+        s = file.readline()
+        print("atr for figure", s)
+        tuple_attr = s.split(",")
+        self._x = int(tuple_attr[0])
+        self._y = int(tuple_attr[1])
+        self._size = int(tuple_attr[2])
+        self._r = self._size
+        self._color = tuple_attr[3].strip()
+        self._selected = eval(tuple_attr[4])

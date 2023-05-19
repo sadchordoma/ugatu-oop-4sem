@@ -3,6 +3,7 @@ from figure_factory import FigureFactory
 from figures.circle import Circle
 from figures.quad import Quad
 from figures.triangle import Triangle
+from figures.group import Group
 
 
 class MyFactory(FigureFactory):
@@ -13,3 +14,5 @@ class MyFactory(FigureFactory):
             return Quad(x, y, size, color, selected)
         elif name == "Triangle":
             return Triangle(x, y, size, color, selected)
+        elif name == "Group":
+            return Group(selected)
