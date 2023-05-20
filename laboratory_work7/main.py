@@ -8,16 +8,9 @@ from factory.my_factory import MyFactory
 from figures.group import Group
 
 
-class App(ctk.CTk):
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
+class View(ctk.CTk):
     def __init__(self):
         super().__init__()
-
         # configure window
         self.title("laboratory work 7")
         self.minsize(600, 400)
@@ -33,9 +26,6 @@ class App(ctk.CTk):
         self.config(menu=self.menu)
         self.file_menu = Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="File", menu=self.file_menu)
-        self.file_menu.add_command(label="Load", command=self.load_state_from_file)
-        self.file_menu.add_command(label="Save", command=self.save_current_state_figures)
-
         self.menu.add_separator()
         # self.menu.add_command(label="History of commands")
 
@@ -93,12 +83,35 @@ class App(ctk.CTk):
                                                       corner_radius=1, border_width=2, border_color="#ffffff")
         self.container_frame.grid(row=0, column=2, rowspan=4, columnspan=4, sticky="nsew")
 
-        #
+        self.text_box = ctk.CTkTextbox(self.container_frame, width=300, height=1080, state="disabled")
+        self.text_box.grid(row=0, column=0, rowspan=4, columnspan=4, sticky="nsew")
+
+        # for 7 lab
+        # menu for popup on <Button-3> for it
+        self.menu_popup = Menu(tearoff=0)
+
+    def change_value_scale(self, event):
+        self.label_scale_var.set(f"Value for Size : {self.scale_var.get()}")
+
+
+class App(View):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def __init__(self):
+        super().__init__()
+        # storage, factory, current color/size
         self.figures = MyFiguresArray()
+        self.factory = MyFactory()
         self.current_color = "#34eb95"
         self.current_size = settings.SIZE
 
         # Binding keys
+        self.file_menu.add_command(label="Load", command=self.load_state_from_file)
+        self.file_menu.add_command(label="Save", command=self.save_current_state_figures)
         self.canvas.bind("<Button-1>", self.mouse_click)
         self.canvas.bind("<Control-Button-1>", self.ctrl_mouse_click)
         self.bind("<Delete>", self.delete_selected_figures)
@@ -108,6 +121,7 @@ class App(ctk.CTk):
         self.curr_color_label.bind("<Button-1>", self.set_color)
         # To trace change variable of scale of figures
         self.label_scale_var.trace_add(["write"], self.set_changed_size)
+
         # To control movement
         self.bind("<KeyPress-Left>", self.key_pressed)
         self.bind("<KeyPress-Right>", self.key_pressed)
@@ -117,25 +131,14 @@ class App(ctk.CTk):
         # bind my own generated events
         self.canvas.bind("<<Refresh>>", self.refresh)
         self.bind("<<Refresh>>", self.refresh)
-
-        # for 7 lab
-        # menu for popup and bind <Button-3> for it
-        self.menu_popup = Menu(tearoff=0)
-        self.menu_popup.add_command(label="Group selected figures",
-                                    command=lambda: self.canvas.event_generate("<<Create-Group>>"))
         self.canvas.bind("<Button-3>", self.context_menu_popup)
         self.canvas.bind("<<Create-Group>>", self.group_shapes)
+        # Bind menu_popup to generate event
+        self.menu_popup.add_command(label="Group selected figures",
+                                    command=lambda: self.canvas.event_generate("<<Create-Group>>"))
 
-        self.text_box = ctk.CTkTextbox(self.container_frame, width=300, height=1080, state="disabled")
-        self.text_box.grid(row=0, column=0, rowspan=4, columnspan=4, sticky="nsew")
-
-        self.factory = MyFactory()
-
-    def change_value_scale(self, event):
-        self.label_scale_var.set(f"Value for Size : {self.scale_var.get()}")
-
+    # Change current size and size of selected figures
     def set_changed_size(self, var=0, index=0, mode=0):
-        # Change current size and size of selected figures
         self.current_size = self.scale_var.get()
         for figure in self.figures.get_selected_figures():
             figure.resize(self.canvas, self.current_size, self.get_window_size())
@@ -144,9 +147,10 @@ class App(ctk.CTk):
         # 600x600+52+52
         window_size = tuple(map(int, self.winfo_geometry()
                                 .replace("+", "x").split("x")[:2]))
+        # 600, 600
         return window_size[0], window_size[1]
 
-    # Set color for drawing figures
+    # Change color after colorchooser
     def set_color_from_ask(self, event):
         self.current_color = colorchooser.askcolor()[1]
         for figure in self.figures.get_selected_figures():
@@ -154,6 +158,7 @@ class App(ctk.CTk):
             figure.select(self.canvas)
         self.curr_color_label.config(background=str(self.current_color))
 
+    # Change color of selected figures
     def set_color(self, event):
         for figure in self.figures.get_selected_figures():
             figure.set_color(self.canvas, self.current_color)
