@@ -87,7 +87,6 @@ class MyFiguresArray(Observer, Observable):
     # added for 8 lab
     def on_object_changed(self, _object):
         id_selected = _object.get_selected()
-        print(id_selected)
         for figure in self._figures:
             figure.selected = False
         for figure in self._figures:

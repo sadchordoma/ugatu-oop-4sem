@@ -12,6 +12,7 @@ from factory.my_factory import MyFactory
 from figures.group import Group
 
 from tree_handler import TreeHandler
+from line_handler import LineHandler
 
 
 class View(ctk.CTk):
@@ -118,13 +119,6 @@ class App(View):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    # def on_object_changed(self, _object):
-    #     for figure in self.figures:
-    #         if figure.selected:
-    #             figure.select(self.canvas)
-    #         else:
-    #             figure.deselect(self.canvas)
-
     def __init__(self):
         super().__init__()
         # storage, factory, current color/size
@@ -164,9 +158,35 @@ class App(View):
         # Bind menu_popup to generate event
         self.menu_popup.add_command(label="Group selected figures",
                                     command=lambda: self.canvas.event_generate("<<Create-Group>>"))
-
+        self.menu_popup.add_command(label="Ungroup selected figures",
+                                    command=lambda: self.canvas.event_generate("<<Remove-Group>>"))
         # added for 8 lab
         self.tree_view.bind("<ButtonRelease>", self.handle_select_tree)
+        self.menu_draw = Menu(self.menu_popup, tearoff=0)
+        self.menu_draw.add_command(label="Begin Line", command=lambda: self.handle_draw_line(False))
+        self.menu_draw.add_command(label="End Line", command=lambda: self.handle_draw_line(True))
+        self.menu_popup.add_cascade(label="Draw line", menu=self.menu_draw)
+
+        self.begin = 0
+        self.end = 0
+        self.lines = []
+
+    def handle_draw_line(self, processed):
+        if len(self.figures.get_selected_figures()) > 1:
+            messagebox.showerror("Error", "Selected > 1 figure to draw line from\n"
+                                          "Need to select one object to another")
+            return
+        if not processed:
+            self.begin = self.figures.get_selected_figures()[0]
+        else:
+            self.end = self.figures.get_selected_figures()[0]
+        if self.begin != 0 and self.end != 0:
+            line = LineHandler(self.begin, self.end)
+            line.draw(self.canvas)
+            self.lines.append(line)
+            self.begin.add_line(line, True)
+            self.end.add_line(line, False)
+            self.end = self.begin = 0
 
     # Change current size and size of selected figures
     def set_changed_size(self, var=0, index=0, mode=0):
@@ -343,6 +363,22 @@ class App(View):
             self.figures.remove(item)
             new_group.select(self.canvas)
 
+    def ungroup_shapes(self, event):
+        selected_figures = self.figures.get_selected_figures()
+        list_to_delete = []
+        list_to_add = []
+        for figure in selected_figures:
+            if str(figure) == "Group":
+                list_to_delete.append(figure)
+                for shape in figure.shapes:
+                    list_to_add.append(shape)
+        for shape in list_to_delete:
+            self.figures.remove(shape)
+            shape.delete(self.canvas)
+        for shape in list_to_add:
+            shape.draw(self.canvas)
+            self.figures.append(shape)
+
     def context_menu_popup(self, event):
         self.menu_popup.post(event.x_root, event.y_root)
 
@@ -362,7 +398,6 @@ class App(View):
             messagebox.showinfo("Success", f"Loaded from {file_path}")
 
     # added for 8 lab
-
     def handle_select_tree(self, event):
         self.deselect_all(self.canvas)
         self.tree_handler.handle_select()

@@ -7,6 +7,18 @@ class Group(Element):
         self.__shapes = []
         self._selected = selected
         self._id = id(self)
+        self._line = -1
+        self._is_primary = False
+
+    @property
+    def x(self):
+        for shape in self.__shapes:
+            return shape.x
+
+    @property
+    def y(self):
+        for shape in self.__shapes:
+            return shape.y
 
     @property
     def group_elems(self):
@@ -49,6 +61,10 @@ class Group(Element):
     def move(self, canvas, dx, dy, mode="move"):
         for shape in self.__shapes:
             shape.move(canvas, dx, dy, mode)
+        if self._line != -1:
+            code = self._line.move(canvas, dx, dy, mode, self._is_primary)
+            if code == -1:
+                self._line = -1
 
     def draw(self, canvas):
         for shape in self.__shapes:
@@ -119,3 +135,7 @@ class Group(Element):
     def find_by_id(self, _id: int):
         for shape in self.__shapes:
             shape.find(_id)
+
+    def add_line(self, line, is_primary):
+        self._line = line
+        self._is_primary = is_primary
