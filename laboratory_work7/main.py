@@ -133,9 +133,12 @@ class App(View):
         self.bind("<<Refresh>>", self.refresh)
         self.canvas.bind("<Button-3>", self.context_menu_popup)
         self.canvas.bind("<<Create-Group>>", self.group_shapes)
+        self.canvas.bind("<<Remove-Group>>", self.ungroup_shapes)
         # Bind menu_popup to generate event
         self.menu_popup.add_command(label="Group selected figures",
                                     command=lambda: self.canvas.event_generate("<<Create-Group>>"))
+        self.menu_popup.add_command(label="Ungroup selected figures",
+                                    command=lambda: self.canvas.event_generate("<<Remove-Group>>"))
 
     # Change current size and size of selected figures
     def set_changed_size(self, var=0, index=0, mode=0):
@@ -307,6 +310,22 @@ class App(View):
         for item in list_to_delete:
             self.figures.remove(item)
             new_group.select(self.canvas)
+
+    def ungroup_shapes(self, event):
+        selected_figures = self.figures.get_selected_figures()
+        list_to_delete = []
+        list_to_add = []
+        for figure in selected_figures:
+            if str(figure) == "Group":
+                list_to_delete.append(figure)
+                for shape in figure.shapes:
+                    list_to_add.append(shape)
+        for shape in list_to_delete:
+            self.figures.remove(shape)
+            shape.delete(self.canvas)
+        for shape in list_to_add:
+            shape.draw(self.canvas)
+            self.figures.append(shape)
 
     def context_menu_popup(self, event):
         self.menu_popup.post(event.x_root, event.y_root)
