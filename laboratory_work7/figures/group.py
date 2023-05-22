@@ -90,17 +90,13 @@ class Group(Element):
         for shape in self.__shapes:
             shape.update_points(dx, dy, mode)
 
-    def load(self, file, figure_factory, **kwargs):
-        for i in range(kwargs.get("_len")):
+    def load(self, file, figure_factory):
+        group_len = int(file.readline())
+        for i in range(group_len):
             s = file.readline().strip()
             print(s)
-            if s == "Group":
-                figure = figure_factory.create_figure("Group")
-                len_group = int(file.readline())
-                figure.load(file, figure_factory, _len=len_group)
-            else:
-                figure = figure_factory.create_figure(s)
-                figure.load(file)
+            figure = figure_factory.create_figure(s)
+            figure.load(file, figure_factory)
             self.__shapes.append(figure)
 
     def save(self):

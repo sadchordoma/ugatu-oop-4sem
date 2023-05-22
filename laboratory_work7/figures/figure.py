@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from settings import MAGIC_CONST, MAGIC_ADD_CONST
+from settings import MAGIC_ADD_CONST
 
 
 class Figure(ABC):
@@ -82,8 +82,6 @@ class Figure(ABC):
             win_y = window_size[1]
         else:
             win_y = canvas.winfo_height() - MAGIC_ADD_CONST
-        # print(self._x, self._y, win_x, win_y)
-        # print(canvas.winfo_width(), canvas.winfo_height())
         if self._x - self._size <= 0:
             print("collision left")
             self.move(canvas, self._size + MAGIC_ADD_CONST, self._y, "to")
@@ -126,7 +124,7 @@ class Figure(ABC):
     def save(self):
         return f"{str(self)}\n{self._x}, {self._y}, {self._size}, {self._color}, {self._selected}"
 
-    def load(self, file, **kwargs):
+    def load(self, file, figure_factory=None):
         s = file.readline()
         print("atr for figure", s)
         tuple_attr = s.split(",")

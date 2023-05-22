@@ -79,12 +79,12 @@ class View(ctk.CTk):
         self.canvas.grid(row=0, column=0, rowspan=4, columnspan=4, sticky="nsew")
 
         # container frame
-        self.container_frame = ctk.CTkScrollableFrame(self, label_text="Container", width=300, height=1080,
+        self.container_frame = ctk.CTkScrollableFrame(self, label_text="", width=300, height=1080,
                                                       corner_radius=1, border_width=2, border_color="#ffffff")
         self.container_frame.grid(row=0, column=2, rowspan=4, columnspan=4, sticky="nsew")
 
-        self.text_box = ctk.CTkTextbox(self.container_frame, width=300, height=1080, state="disabled")
-        self.text_box.grid(row=0, column=0, rowspan=4, columnspan=4, sticky="nsew")
+        # self.text_box = ctk.CTkTextbox(self.container_frame, width=300, height=1080, state="disabled")
+        # self.text_box.grid(row=0, column=0, rowspan=4, columnspan=4, sticky="nsew")
 
         # for 7 lab
         # menu for popup on <Button-3> for it
@@ -331,12 +331,9 @@ class App(View):
         self.menu_popup.post(event.x_root, event.y_root)
 
     def save_current_state_figures(self):
-        file_path = filedialog.askopenfilename(title="Save File", initialfile="save.txt", defaultextension=".txt")
+        file_path = filedialog.asksaveasfilename(title="Save File", initialfile="save.txt", defaultextension=".txt")
         try:
-            with open(file_path, "w") as f:
-                f.write("SOME WORDS TO CHECK IF FILE WASNT CORRUPTED\n")
-                for figure in self.figures:
-                    f.write("\n" + str(figure.save()))
+            self.figures.save_figures(file_path)
             messagebox.showinfo("Notification", f"Saved to {file_path}")
         except FileNotFoundError:
             pass
