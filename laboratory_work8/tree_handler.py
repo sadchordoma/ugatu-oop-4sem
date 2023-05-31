@@ -8,6 +8,8 @@ class TreeHandler(Observer, Observable):
         self._tree = tk_tree
 
     def on_object_changed(self, _object):
+        if len(_object.get_figures()) == 0:
+            self.delete_all()
         selected_figures, last_command = _object.get_current_state()
         if last_command[0] == "+":
             self.insert("", "end", last_command[1].id, last_command[1])

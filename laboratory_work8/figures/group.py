@@ -1,4 +1,6 @@
 from figures.element import Element
+from observer.figure_observable import FigureObservable
+from observer.figure_observer import FigureObserver
 
 
 class Group(Element):
@@ -7,8 +9,9 @@ class Group(Element):
         self.__shapes = []
         self._selected = selected
         self._id = id(self)
-        self._line = -1
-        self._is_primary = False
+        self.figure_observer = FigureObserver()
+        self.figure_observable = FigureObservable()
+        self.checked = False
 
     @property
     def x(self):
@@ -61,10 +64,8 @@ class Group(Element):
     def move(self, canvas, dx, dy, mode="move"):
         for shape in self.__shapes:
             shape.move(canvas, dx, dy, mode)
-        if self._line != -1:
-            code = self._line.move(canvas, dx, dy, mode, self._is_primary)
-            if code == -1:
-                self._line = -1
+        self.figure_observable.notify_everyone(canvas, dx, dy)
+        self.figure_observer.on_object_changed(canvas)
 
     def draw(self, canvas):
         for shape in self.__shapes:
@@ -105,22 +106,20 @@ class Group(Element):
     def delete(self, canvas):
         for shape in self.__shapes:
             shape.delete(canvas)
+        self.figure_observable.remove_all(canvas)
+        self.figure_observer.remove_all(canvas, self)
 
     def update_points(self, dx, dy, mode="move"):
         for shape in self.__shapes:
             shape.update_points(dx, dy, mode)
 
-    def load(self, file, figure_factory, **kwargs):
-        for i in range(kwargs.get("_len")):
+    def load(self, file, figure_factory):
+        group_len = int(file.readline())
+        for i in range(group_len):
             s = file.readline().strip()
             print(s)
-            if s == "Group":
-                figure = figure_factory.create_figure("Group")
-                len_group = int(file.readline())
-                figure.load(file, figure_factory, _len=len_group)
-            else:
-                figure = figure_factory.create_figure(s)
-                figure.load(file)
+            figure = figure_factory.create_figure(s)
+            figure.load(file, figure_factory)
             self.__shapes.append(figure)
 
     def save(self):
@@ -135,7 +134,3 @@ class Group(Element):
     def find_by_id(self, _id: int):
         for shape in self.__shapes:
             shape.find(_id)
-
-    def add_line(self, line, is_primary):
-        self._line = line
-        self._is_primary = is_primary

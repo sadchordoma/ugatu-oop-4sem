@@ -49,7 +49,7 @@ class Circle(Figure):
         canvas.coords(self._id, self._x - self._r, self._y - self._r,
                       self._x + self._r, self._y + self._r)
 
-    def load(self, file, **kwargs):
+    def load(self, file, figure_factory=None):
         s = file.readline()
         print("atr for figure", s)
         tuple_attr = s.split(",")

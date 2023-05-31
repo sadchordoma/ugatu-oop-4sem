@@ -155,6 +155,7 @@ class App(View):
         self.bind("<<Refresh>>", self.refresh)
         self.canvas.bind("<Button-3>", self.context_menu_popup)
         self.canvas.bind("<<Create-Group>>", self.group_shapes)
+        self.canvas.bind("<<Remove-Group>>", self.ungroup_shapes)
         # Bind menu_popup to generate event
         self.menu_popup.add_command(label="Group selected figures",
                                     command=lambda: self.canvas.event_generate("<<Create-Group>>"))
@@ -169,7 +170,7 @@ class App(View):
 
         self.begin = 0
         self.end = 0
-        self.lines = []
+        self.line_handler = LineHandler()
 
     def handle_draw_line(self, processed):
         if len(self.figures.get_selected_figures()) > 1:
@@ -181,11 +182,15 @@ class App(View):
         else:
             self.end = self.figures.get_selected_figures()[0]
         if self.begin != 0 and self.end != 0:
-            line = LineHandler(self.begin, self.end)
-            line.draw(self.canvas)
-            self.lines.append(line)
-            self.begin.add_line(line, True)
-            self.end.add_line(line, False)
+            if self.begin == self.end:
+                messagebox.showerror("Error", "You can not select begin and end of line the same!")
+                self.begin = self.end = 0
+                return
+            # begin start to observe end
+            self.begin.figure_observable.add_observer(self.end)
+            # end start be observable to start
+            self.end.figure_observer.add_parent(self.begin)
+            self.begin.figure_observable.draw_lines(self.canvas, self.begin)
             self.end = self.begin = 0
 
     # Change current size and size of selected figures
@@ -221,7 +226,7 @@ class App(View):
         for figure in self.figures.get_selected_figures():
             figure.fix_collision(self.canvas, self.get_window_size())
 
-    def key_pressed(self, event):
+    def key_pressed(self, event=None):
         dist = 5
         dx = 0
         dy = 0
@@ -242,7 +247,7 @@ class App(View):
             else:
                 figure.move(self.canvas, dx, dy, "move")
 
-        event.widget.event_generate("<<Refresh>>")
+        self.canvas.event_generate("<<Refresh>>")
 
     def deselect_all(self, event):
         for figure in self.figures:
@@ -370,7 +375,7 @@ class App(View):
         for figure in selected_figures:
             if str(figure) == "Group":
                 list_to_delete.append(figure)
-                for shape in figure.shapes:
+                for shape in figure.group_elems:
                     list_to_add.append(shape)
         for shape in list_to_delete:
             self.figures.remove(shape)

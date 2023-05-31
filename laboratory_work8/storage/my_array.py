@@ -17,6 +17,9 @@ class MyFiguresArray(Observer, Observable):
     def __len__(self):
         return len(self._figures)
 
+    def get_figures(self):
+        return self._figures
+
     @property
     def last_command(self):
         return self._last_command
@@ -54,33 +57,21 @@ class MyFiguresArray(Observer, Observable):
 
     def load_figures(self, file_path: str, figure_factory, canvas=None):
         f = open(file_path, "r")
-        first_line = f.readline()
-        if first_line != "SOME WORDS TO CHECK IF FILE WASNT CORRUPTED\n":
-            raise Exception("Corrupted File")
+        # the first line is empty
         f.readline()
-        self.delete_all()
         while True:
             s = f.readline().strip()
             print("f.readline()", s)
             if not s:
                 f.close()
                 break
-            if s == "Group":
-                figure = figure_factory.create_figure("Group")
-                print("Group", figure)
-                len_group = int(f.readline())
-                print("len_group", len_group)
-                figure.load(f, figure_factory, _len=len_group)
-            else:
-                figure = figure_factory.create_figure(s)
-                print("Figure", figure)
-                figure.load(f)
+            figure = figure_factory.create_figure(s)
+            figure.load(f, figure_factory)
             figure.draw(canvas)
             self.append(figure)
 
     def save_figures(self, file_path: str):
         with open(file_path, "w") as f:
-            f.write("SOME WORDS TO CHECK IF FILE WASNT CORRUPTED\n")
             for figure in self._figures:
                 f.write("\n" + str(figure.save()))
 

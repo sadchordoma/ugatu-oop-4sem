@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
-from settings import MAGIC_CONST, MAGIC_ADD_CONST
+from settings import MAGIC_ADD_CONST
+
+from observer.figure_observable import FigureObservable
+from observer.figure_observer import FigureObserver
 
 
 class Figure(ABC):
@@ -10,8 +13,10 @@ class Figure(ABC):
         self._id = -1
         self._color = color
         self._selected = selected
-        self._line = -1
-        self.is_primary = False
+
+        self.figure_observable = FigureObservable()
+        self.figure_observer = FigureObserver()
+        self.checked = False
 
     def __len__(self):
         return 1
@@ -83,11 +88,9 @@ class Figure(ABC):
         elif mode == "move":
             self.update_points(dx, dy, mode)
             canvas.move(self._id, dx, dy)
-        if self._line != -1:
-            code = self._line.move(canvas, dx, dy, mode, self.is_primary)
-            if code == -1:
-                self._line.remove(canvas)
-                self._line = -1
+        self.figure_observable.notify_everyone(canvas, dx, dy)
+        self.figure_observer.on_object_changed(canvas)
+        # self.figure_observable.draw_lines(canvas, self)
 
     def move_to(self, canvas, x, y):
         pass
@@ -101,8 +104,6 @@ class Figure(ABC):
             win_y = window_size[1]
         else:
             win_y = canvas.winfo_height() - MAGIC_ADD_CONST
-        # print(self._x, self._y, win_x, win_y)
-        # print(canvas.winfo_width(), canvas.winfo_height())
         if self._x - self._size <= 0:
             print("collision left")
             self.move(canvas, self._size + MAGIC_ADD_CONST, self._y, "to")
@@ -141,14 +142,13 @@ class Figure(ABC):
 
     def delete(self, canvas):
         canvas.delete(self._id)
-        if self._line != -1:
-            self._line.remove(canvas)
-            self._line = -1
+        self.figure_observable.remove_all(canvas)
+        self.figure_observer.remove_all(canvas, self)
 
     def save(self):
         return f"{str(self)}\n{self._x}, {self._y}, {self._size}, {self._color}, {self._selected}"
 
-    def load(self, file, **kwargs):
+    def load(self, file, figure_factory=None):
         s = file.readline()
         print("atr for figure", s)
         tuple_attr = s.split(",")
@@ -158,7 +158,3 @@ class Figure(ABC):
         self._color = tuple_attr[3].strip()
         self._selected = eval(tuple_attr[4])
         self.update_points(self._x, self._y, "to")
-
-    def add_line(self, line, is_primary):
-        self._line = line
-        self.is_primary = is_primary

@@ -1,42 +1,39 @@
-SOME WORDS TO CHECK IF FILE WASNT CORRUPTED
 
+Group
+3
+Group
+4
 Circle
-287, 350, 50, #34eb95, False
+244, 213, 50, #34eb95, False
 Circle
-674, 449, 50, #34eb95, False
+335, 195, 50, #34eb95, False
+Circle
+164, 302, 50, #34eb95, False
+Circle
+150, 158, 50, #34eb95, False
+Group
+3
+Circle
+554, 312, 50, #34eb95, False
+Circle
+502, 396, 50, #34eb95, False
+Circle
+430, 461, 50, #34eb95, False
+Circle
+559, 178, 50, #34eb95, False
+Circle
+834, 247, 50, #34eb95, False
+Circle
+717, 502, 50, #34eb95, False
+Circle
+832, 545, 50, #34eb95, False
+Circle
+1093, 374, 50, #34eb95, False
 Group
 2
-Group
-5
 Circle
-504, 132, 50, #34eb95, False
+1084, 183, 50, #34eb95, False
 Circle
-819, 186, 50, #34eb95, False
+1151, 173, 50, #34eb95, False
 Circle
-984, 270, 50, #34eb95, False
-Circle
-956, 448, 50, #34eb95, False
-Circle
-592, 425, 50, #34eb95, False
-Group
-2
-Circle
-1022, 599, 50, #34eb95, False
-Circle
-924, 617, 50, #34eb95, False
-Circle
-454, 606, 50, #34eb95, False
-Circle
-660, 631, 50, #34eb95, False
-Circle
-747, 598, 50, #34eb95, False
-Group
-2
-Circle
-137, 166, 50, #34eb95, False
-Circle
-207, 140, 50, #34eb95, False
-Circle
-383, 211, 50, #34eb95, False
-Circle
-445, 324, 50, #34eb95, True
+1120, 611, 50, #34eb95, True
